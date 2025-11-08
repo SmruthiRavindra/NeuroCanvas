@@ -129,51 +129,77 @@ export default function MoodDetectionLanding() {
         </div>
 
         {analysisState === 'idle' && (
-          <div className="grid md:grid-cols-2 gap-6 max-w-3xl w-full mb-8">
-            <Card className="backdrop-blur-md bg-card/90" data-testid="card-camera-permission">
-              <CardHeader>
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 mx-auto">
-                  <Camera className="w-6 h-6 text-primary" />
-                </div>
-                <CardTitle className="text-center">Camera Access</CardTitle>
-                <CardDescription className="text-center">
-                  We analyze your facial expressions to understand your emotional state
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button
-                  onClick={requestCameraAccess}
-                  disabled={cameraGranted}
-                  className="w-full"
-                  data-testid="button-allow-camera"
-                >
-                  {cameraGranted ? 'Camera Enabled ✓' : 'Allow Camera'}
-                </Button>
-              </CardContent>
-            </Card>
+          <>
+            {cameraGranted && (
+              <div className="max-w-3xl w-full mb-8">
+                <Card className="backdrop-blur-md bg-card/90">
+                  <CardContent className="pt-6">
+                    <div className="relative aspect-video rounded-2xl overflow-hidden bg-black">
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-lg">
+                        <p className="text-white text-sm font-medium flex items-center gap-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full" />
+                          Camera Preview
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
-            <Card className="backdrop-blur-md bg-card/90" data-testid="card-mic-permission">
-              <CardHeader>
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 mx-auto">
-                  <Mic className="w-6 h-6 text-primary" />
-                </div>
-                <CardTitle className="text-center">Microphone Access</CardTitle>
-                <CardDescription className="text-center">
-                  Voice tone and pitch help us detect subtle emotional nuances
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button
-                  onClick={requestMicAccess}
-                  disabled={micGranted}
-                  className="w-full"
-                  data-testid="button-allow-mic"
-                >
-                  {micGranted ? 'Microphone Enabled ✓' : 'Allow Microphone'}
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+            <div className="grid md:grid-cols-2 gap-6 max-w-3xl w-full mb-8">
+              <Card className="backdrop-blur-md bg-card/90" data-testid="card-camera-permission">
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 mx-auto">
+                    <Camera className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-center">Camera Access</CardTitle>
+                  <CardDescription className="text-center">
+                    We analyze your facial expressions to understand your emotional state
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    onClick={requestCameraAccess}
+                    disabled={cameraGranted}
+                    className="w-full"
+                    data-testid="button-allow-camera"
+                  >
+                    {cameraGranted ? 'Camera Enabled ✓' : 'Allow Camera'}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="backdrop-blur-md bg-card/90" data-testid="card-mic-permission">
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 mx-auto">
+                    <Mic className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-center">Microphone Access</CardTitle>
+                  <CardDescription className="text-center">
+                    Voice tone and pitch help us detect subtle emotional nuances
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    onClick={requestMicAccess}
+                    disabled={micGranted}
+                    className="w-full"
+                    data-testid="button-allow-mic"
+                  >
+                    {micGranted ? 'Microphone Enabled ✓' : 'Allow Microphone'}
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </>
         )}
 
         {(analysisState === 'analyzing' || analysisState === 'complete') && (
