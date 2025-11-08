@@ -49,7 +49,7 @@
   
   /* Muted - Soft neutral */
   --muted: 220 15% 94%;
-  --muted-foreground: 0 0% 42%;       /* Muted gray #6B6B6B */
+  --muted-foreground: 0 0% 35%;       /* Darker gray for better contrast #595959 */
   
   /* Accent - Pastel blue-gray */
   --accent: 220 20% 90%;

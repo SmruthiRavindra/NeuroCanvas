@@ -381,86 +381,78 @@ export default function MoodDetectionLanding() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse" />
-        <div className="absolute bottom-20 right-10 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-700" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-1000" />
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background relative overflow-hidden animate-fade-in">
+      {/* Subtle background elements - calm and minimal */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-primary/10 rounded-full mix-blend-normal filter blur-3xl animate-float" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/30 rounded-full mix-blend-normal filter blur-3xl animate-float delay-500" />
       </div>
 
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-16">
-        <div className="max-w-4xl w-full">
-          {/* Title Section */}
-          <div className="text-center mb-16 space-y-6">
-            <h1 className="text-7xl md:text-8xl font-display font-bold text-white mb-8 tracking-tight">
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-8 py-20">
+        <div className="max-w-5xl w-full">
+          {/* Title Section - Calm and Centered */}
+          <div className="text-center mb-20 space-y-6 animate-slide-up">
+            <h1 className="text-6xl md:text-7xl font-heading font-bold text-foreground mb-6 tracking-tight">
               NeuroCanvas
             </h1>
-            <h2 className="text-5xl md:text-6xl font-display font-bold text-white mb-6 tracking-tight">
+            <h2 className="text-4xl md:text-5xl font-heading font-semibold text-foreground mb-4 tracking-tight">
               Detect Your Mood
             </h2>
-            <p className="text-xl md:text-2xl text-purple-200 max-w-2xl mx-auto leading-relaxed font-light">
+            <p className="text-lg md:text-xl font-body text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Use your voice to analyze your emotional state. Speak naturally and let our AI understand how you're feeling.
             </p>
           </div>
 
-        {/* Main Container - Glassmorphism */}
-        <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl overflow-hidden shadow-2xl p-16 transition-all duration-500">
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-pink-500/10 pointer-events-none" />
+        {/* Main Container - Soft Glassmorphism */}
+        <div className="relative glass shadow-2xl rounded-3xl overflow-hidden p-20 transition-all duration-500 mood-transition animate-scale-blur delay-200">
+          {/* Subtle overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
           
           {analysisState === 'idle' ? (
-            /* Idle State */
-            <div className="relative flex flex-col items-center justify-center text-center space-y-8">
+            /* Idle State - Calm and Inviting */}
+            <div className="relative flex flex-col items-center justify-center text-center space-y-10">
               <div className="relative group">
-                {/* Animated rings */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 opacity-20 blur-2xl animate-pulse" />
-                <div className="absolute inset-0 rounded-full border-2 border-purple-400/30 animate-ping" />
-                <div className="absolute inset-0 rounded-full border-2 border-pink-400/30 animate-ping delay-300" />
+                {/* Gentle glow */}
+                <div className="absolute inset-0 rounded-full bg-primary/20 opacity-40 blur-2xl pulse-gentle" />
                 
-                {/* Main icon */}
-                <div className="relative w-40 h-40 rounded-full bg-gradient-to-br from-purple-600 via-purple-500 to-pink-600 flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform duration-300">
-                  <Mic className="w-20 h-20 text-white drop-shadow-lg" data-testid="icon-mic" />
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <p className="text-white text-2xl font-semibold">Ready to listen</p>
-                <p className="text-purple-200 text-lg font-light">Click the button below to start voice analysis</p>
-              </div>
-            </div>
-          ) : (
-            /* Analyzing State */
-            <div className="relative flex flex-col items-center justify-center text-center space-y-8">
-              <div className="relative w-40 h-40">
-                {/* Pulsing background glow */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 opacity-50 animate-pulse blur-2xl" />
-                
-                {/* Multiple animated rings */}
-                <div className="absolute inset-0 rounded-full border-4 border-pink-400/50 animate-ping" />
-                <div className="absolute inset-2 rounded-full border-4 border-purple-400/50 animate-ping delay-150" />
-                <div className="absolute inset-4 rounded-full border-4 border-indigo-400/50 animate-ping delay-300" />
-                
-                {/* Center icon container */}
-                <div className="absolute inset-8 rounded-full bg-gradient-to-br from-purple-900 to-indigo-900 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-2xl">
-                  <Mic className="w-16 h-16 text-pink-400 animate-pulse" data-testid="icon-analyzing" />
+                {/* Main icon container */}
+                <div className="relative w-32 h-32 rounded-full bg-primary/10 backdrop-blur-sm border border-primary/30 flex items-center justify-center shadow-xl group-hover:scale-105 transition-all duration-400 mood-transition">
+                  <Mic className="w-16 h-16 text-primary" data-testid="icon-mic" />
                 </div>
               </div>
               
               <div className="space-y-4">
-                <Loader2 className="w-10 h-10 text-pink-400 animate-spin mx-auto" />
-                <p className="text-white text-3xl font-bold">
+                <p className="text-foreground text-2xl font-heading font-semibold">Ready to listen</p>
+                <p className="text-muted-foreground text-lg font-body leading-relaxed">Click the button below to start voice analysis</p>
+              </div>
+            </div>
+          ) : (
+            /* Analyzing State - Gentle and Focused */}
+            <div className="relative flex flex-col items-center justify-center text-center space-y-10">
+              <div className="relative w-32 h-32">
+                {/* Soft pulsing glow */}
+                <div className="absolute inset-0 rounded-full bg-primary/30 opacity-50 pulse-gentle blur-2xl" />
+                
+                {/* Center icon container */}
+                <div className="absolute inset-0 rounded-full glass border border-primary/40 flex items-center justify-center shadow-xl">
+                  <Mic className="w-16 h-16 text-primary pulse-gentle" data-testid="icon-analyzing" />
+                </div>
+              </div>
+              
+              <div className="space-y-6">
+                <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto" />
+                <p className="text-foreground text-3xl font-heading font-bold">
                   Listening to your words...
                 </p>
                 {transcript ? (
-                  <div className="mt-6 p-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 max-w-2xl mx-auto">
-                    <p className="text-sm text-purple-300 mb-2 font-semibold">What you said:</p>
-                    <p className="text-white text-lg font-light leading-relaxed" data-testid="text-transcript">
+                  <div className="mt-8 p-8 glass rounded-2xl border border-primary/20 max-w-2xl mx-auto animate-fade-in">
+                    <p className="text-sm font-body text-muted-foreground mb-3 font-semibold">What you said:</p>
+                    <p className="text-foreground text-lg font-body leading-relaxed" data-testid="text-transcript">
                       "{transcript}"
                     </p>
                   </div>
                 ) : (
-                  <p className="text-purple-200 text-lg font-light">
+                  <p className="text-muted-foreground text-lg font-body leading-relaxed">
                     Speak naturally - we're analyzing your words and tone
                   </p>
                 )}
@@ -471,15 +463,15 @@ export default function MoodDetectionLanding() {
 
         {/* Video Preview (shown during analysis when camera is active) */}
         {analysisState === 'analyzing' && (
-          <div className="mt-8 flex justify-center">
-            <div className="relative bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
-              <div className="absolute top-2 right-2 bg-purple-900/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs text-white font-medium flex items-center gap-2 z-10">
+          <div className="mt-12 flex justify-center animate-fade-in">
+            <div className="relative glass rounded-3xl p-6 border border-primary/20 shadow-lg">
+              <div className="absolute top-4 right-4 bg-primary/90 backdrop-blur-sm px-4 py-2 rounded-full text-xs text-white font-body font-medium flex items-center gap-2 z-10">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                 Processing Locally
               </div>
               <video
                 ref={videoRef}
-                className="rounded-xl w-80 h-60 object-cover"
+                className="rounded-2xl w-80 h-60 object-cover"
                 muted
                 playsInline
                 autoPlay
@@ -490,32 +482,27 @@ export default function MoodDetectionLanding() {
         )}
 
         {/* Action Buttons */}
-        <div className="mt-12 flex flex-col items-center gap-4">
+        <div className="mt-16 flex flex-col items-center gap-6">
           <Button
             onClick={analyzeVoiceAndVideo}
             disabled={analysisState === 'analyzing'}
             size="lg"
-            className={`relative h-18 px-16 text-xl font-semibold transition-all duration-300 rounded-2xl shadow-2xl overflow-hidden group ${
+            className={`relative h-16 px-12 text-lg font-body font-semibold transition-all duration-400 rounded-2xl shadow-lg mood-transition ${
               analysisState === 'analyzing'
-                ? 'bg-purple-900/50 cursor-not-allowed'
-                : 'bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 hover:from-pink-500 hover:via-purple-500 hover:to-indigo-500 hover:scale-105 active:scale-95 hover:shadow-pink-500/50'
+                ? 'bg-muted cursor-not-allowed opacity-60'
+                : 'mood-glow-hover hover:scale-105 active:scale-95'
             }`}
             data-testid="button-analyze-voice"
           >
-            {/* Button glow effect */}
-            {analysisState === 'idle' && (
-              <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-400 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300" />
-            )}
-            
             <span className="relative flex items-center gap-3">
               {analysisState === 'analyzing' ? (
                 <>
-                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" />
                   Analyzing...
                 </>
               ) : (
                 <>
-                  {videoEnabled && modelsLoaded ? <Video className="w-6 h-6 group-hover:animate-pulse" /> : <Mic className="w-6 h-6 group-hover:animate-pulse" />}
+                  {videoEnabled && modelsLoaded ? <Video className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
                   Start {videoEnabled && modelsLoaded ? 'Video + Voice' : 'Voice'} Analysis
                 </>
               )}
@@ -526,18 +513,18 @@ export default function MoodDetectionLanding() {
           {modelsLoaded && analysisState === 'idle' && (
             <button
               onClick={() => setVideoEnabled(!videoEnabled)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-purple-200 hover:text-white transition-all duration-200"
+              className="flex items-center gap-3 px-6 py-3 rounded-2xl glass border border-primary/20 text-foreground hover-elevate transition-all duration-300"
               data-testid="button-toggle-camera"
             >
               {videoEnabled ? (
                 <>
-                  <Video className="w-4 h-4" />
-                  <span className="text-sm">Camera Enabled</span>
+                  <Video className="w-5 h-5 text-primary" />
+                  <span className="text-sm font-body font-medium">Camera Enabled</span>
                 </>
               ) : (
                 <>
-                  <VideoOff className="w-4 h-4" />
-                  <span className="text-sm">Voice Only</span>
+                  <VideoOff className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-sm font-body font-medium">Voice Only</span>
                 </>
               )}
             </button>
@@ -545,11 +532,11 @@ export default function MoodDetectionLanding() {
         </div>
 
         {/* Info Text */}
-        <div className="mt-8 text-center space-y-2">
-          <p className="text-purple-200 text-base font-light">
+        <div className="mt-10 text-center space-y-3">
+          <p className="text-muted-foreground text-base font-body">
             {videoEnabled ? 'Camera and microphone access required.' : 'Microphone access required.'}
           </p>
-          <p className="text-purple-300 text-sm font-light">
+          <p className="text-muted-foreground text-sm font-body leading-relaxed max-w-2xl mx-auto">
             Speak naturally for 18 seconds - {videoEnabled ? 'our AI analyzes your facial expressions, words, and voice tone' : 'our AI analyzes the words you say and your voice tone'}
           </p>
         </div>
