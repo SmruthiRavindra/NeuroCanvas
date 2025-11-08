@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { Mic, Loader2, Sparkles, Video, VideoOff } from 'lucide-react';
+import { Mic, Loader2, Video, VideoOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMood } from '@/contexts/MoodContext';
 import * as faceapi from '@vladmandic/face-api';
+import logoUrl from '@assets/generated_images/NeuroCanvas_emotional_AI_logo_894759fb.png';
 
 type AnalysisState = 'idle' | 'analyzing';
 
@@ -394,9 +395,13 @@ export default function MoodDetectionLanding() {
           {/* Title Section */}
           <div className="text-center mb-16 space-y-6">
             <div className="flex justify-center mb-8 relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full blur-xl opacity-50 animate-pulse" />
-              <div className="relative p-5 rounded-full bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-600 shadow-2xl">
-                <Sparkles className="w-14 h-14 text-white animate-pulse" />
+              <div className="absolute inset-0 bg-gradient-to-br from-pink-500 to-purple-600 blur-xl opacity-40 animate-pulse" style={{ width: '200px', height: '200px', margin: 'auto' }} />
+              <div className="relative">
+                <img 
+                  src={logoUrl} 
+                  alt="NeuroCanvas Logo" 
+                  className="w-32 h-32 object-contain drop-shadow-2xl"
+                />
               </div>
             </div>
             <h1 className="text-6xl md:text-7xl font-display font-bold text-white mb-6 tracking-tight">
