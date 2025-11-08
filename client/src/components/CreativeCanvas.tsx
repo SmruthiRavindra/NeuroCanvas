@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Music, Palette, FileText, Sparkles, RefreshCw, Mic, Square } from 'lucide-react';
+import { Music, Palette, FileText, Sparkles, RefreshCw, Mic, Square, Send, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,6 +7,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useMood } from '@/contexts/MoodContext';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import PersonaSelector from './PersonaSelector';
+import { useToast } from '@/hooks/use-toast';
+import { useMutation } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 const moodColorPalettes = {
   calm: [
@@ -224,6 +228,7 @@ const moodSuggestions: Record<string, { music: string[], art: string[], poetry: 
 
 export default function CreativeCanvas() {
   const { mood } = useMood();
+  const { toast } = useToast();
   const [activeMode, setActiveMode] = useState<'music' | 'art' | 'poetry'>('art');
   const [userInput, setUserInput] = useState('');
   const [suggestions, setSuggestions] = useState<Record<string, string[]>>({
@@ -235,6 +240,7 @@ export default function CreativeCanvas() {
   const [isRecording, setIsRecording] = useState(false);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [transcript, setTranscript] = useState('');
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string>('aurora');
   const recognitionRef = useRef<any>(null);
 
   const currentMood = mood || 'calm';
@@ -300,13 +306,13 @@ export default function CreativeCanvas() {
     fetchSuggestions(activeMode);
   }, [activeMode, currentMood]);
 
-  const fetchSuggestions = async (mode: 'music' | 'art' | 'poetry') => {
+  const fetchSuggestions = async (mode: 'music' | 'art' | 'poetry', customPrompt?: string) => {
     setLoadingSuggestions(true);
     try {
       const response = await fetch('/api/creative-suggestions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mood: currentMood, mode })
+        body: JSON.stringify({ mood: currentMood, mode, customPrompt })
       });
 
       if (response.ok) {
@@ -322,6 +328,60 @@ export default function CreativeCanvas() {
 
   const regenerateSuggestion = () => {
     fetchSuggestions(activeMode);
+  };
+
+  const generateFromCustomPrompt = () => {
+    if (!userInput.trim()) {
+      toast({
+        title: "Input required",
+        description: "Please enter what you'd like to create",
+        variant: "destructive"
+      });
+      return;
+    }
+    fetchSuggestions(activeMode, userInput);
+  };
+
+  const generateAudioMutation = useMutation({
+    mutationFn: async (data: { prompt: string; personaId: string; compositionType: string }) => {
+      const response = await fetch('/api/generate-audio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to generate audio');
+      return response.json();
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Voice synthesis ready!",
+        description: data.message || "Your audio is being generated",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Generation failed",
+        description: error.message || "Failed to generate audio",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleGenerateVoice = () => {
+    if (!userInput.trim()) {
+      toast({
+        title: "Input required",
+        description: "Please enter lyrics or music description",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    generateAudioMutation.mutate({
+      prompt: userInput,
+      personaId: selectedPersonaId,
+      compositionType: 'music'
+    });
   };
 
   const startVoiceRecording = async () => {
@@ -474,12 +534,51 @@ export default function CreativeCanvas() {
                 </div>
 
                 <Textarea
-                  placeholder={`Start creating your ${activeMode}...`}
-                  className="min-h-[400px] text-base resize-none"
+                  placeholder={`Enter your ${activeMode} idea or use AI suggestions...`}
+                  className="min-h-[300px] text-base resize-none"
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
                   data-testid="textarea-creative-input"
                 />
+
+                {/* Persona selection for Music mode */}
+                {activeMode === 'music' && (
+                  <div className="mt-6 p-6 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Music className="w-5 h-5 text-primary" />
+                      <h3 className="font-semibold">Select AI Voice Persona</h3>
+                    </div>
+                    <PersonaSelector
+                      selectedPersonaId={selectedPersonaId}
+                      onSelectPersona={setSelectedPersonaId}
+                    />
+                    <div className="mt-4 flex gap-2">
+                      <Button
+                        onClick={handleGenerateVoice}
+                        disabled={generateAudioMutation.isPending || !userInput.trim()}
+                        className="gap-2 flex-1"
+                        data-testid="button-generate-voice"
+                      >
+                        <Play className="w-4 h-4" />
+                        {generateAudioMutation.isPending ? 'Generating...' : 'Generate Music'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Generate from custom prompt button */}
+                <div className="mt-4 flex gap-2">
+                  <Button
+                    onClick={generateFromCustomPrompt}
+                    disabled={loadingSuggestions || !userInput.trim()}
+                    className="gap-2 flex-1"
+                    variant="default"
+                    data-testid="button-generate-custom"
+                  >
+                    <Send className="w-4 h-4" />
+                    {loadingSuggestions ? 'Generating...' : 'Get AI Suggestions'}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
