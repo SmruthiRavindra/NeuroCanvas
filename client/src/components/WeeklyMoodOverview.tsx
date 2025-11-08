@@ -26,18 +26,26 @@ const insights = [
 
 export default function WeeklyMoodOverview() {
   return (
-    <div className="min-h-screen bg-background mood-transition">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-display font-bold mb-2">Weekly Mood Overview</h1>
-          <p className="text-muted-foreground">Track your emotional journey and creative patterns</p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 mood-transition">
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        {/* Enhanced Header */}
+        <div className="mb-12 text-center space-y-4">
+          <h1 className="text-5xl md:text-6xl font-display font-bold tracking-tight bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent animate-fade-in">
+            Weekly Mood Overview
+          </h1>
+          <p className="text-lg text-muted-foreground font-light max-w-2xl mx-auto">
+            Track your emotional journey and uncover creative patterns across the week
+          </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6 mb-6">
-          <Card data-testid="card-mood-distribution" className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30">
-            <CardHeader>
-              <CardTitle className="text-2xl">Mood Distribution</CardTitle>
-              <CardDescription>Your emotional landscape this week</CardDescription>
+        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+          <Card data-testid="card-mood-distribution" className="relative overflow-hidden border-2 border-primary/20 shadow-2xl bg-gradient-to-br from-white/50 to-white/30 dark:from-white/5 dark:to-white/10 backdrop-blur-sm animate-slide-in">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-blue-500/10 pointer-events-none" />
+            <CardHeader className="relative">
+              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                Mood Distribution
+              </CardTitle>
+              <CardDescription className="text-base">Your emotional landscape this week</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-80">
@@ -80,16 +88,25 @@ export default function WeeklyMoodOverview() {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="mt-6 space-y-3">
-                {moodData.map((item) => {
+              <div className="mt-6 space-y-4">
+                {moodData.map((item, idx) => {
                   const Icon = item.icon;
                   return (
-                    <div key={item.mood} className="flex items-center justify-between p-3 rounded-lg hover-elevate" style={{ backgroundColor: `${item.color}15` }}>
-                      <div className="flex items-center gap-3">
-                        <Icon className="w-5 h-5" style={{ color: item.color }} />
-                        <span className="font-semibold">{item.mood}</span>
+                    <div 
+                      key={item.mood} 
+                      className="flex items-center justify-between p-4 rounded-xl hover-elevate active-elevate-2 border border-white/20 backdrop-blur-sm transition-all duration-300 hover:shadow-lg cursor-pointer animate-slide-in"
+                      style={{ 
+                        backgroundColor: `${item.color}15`,
+                        animationDelay: `${idx * 100}ms`
+                      }}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 rounded-lg shadow-md" style={{ backgroundColor: item.color }}>
+                          <Icon className="w-5 h-5 text-white" />
+                        </div>
+                        <span className="font-bold text-lg">{item.mood}</span>
                       </div>
-                      <span className="text-lg font-bold" style={{ color: item.color }}>{item.percentage}%</span>
+                      <span className="text-2xl font-bold" style={{ color: item.color }}>{item.percentage}%</span>
                     </div>
                   );
                 })}
@@ -97,30 +114,34 @@ export default function WeeklyMoodOverview() {
             </CardContent>
           </Card>
 
-          <Card data-testid="card-creative-activities" className="bg-gradient-to-br from-orange-50 to-pink-50 dark:from-orange-950/30 dark:to-pink-950/30">
-            <CardHeader>
-              <CardTitle className="text-2xl">Creative Activities</CardTitle>
-              <CardDescription>What you've been creating</CardDescription>
+          <Card data-testid="card-creative-activities" className="relative overflow-hidden border-2 border-primary/20 shadow-2xl bg-gradient-to-br from-white/50 to-white/30 dark:from-white/5 dark:to-white/10 backdrop-blur-sm animate-slide-in stagger-delay-1">
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-transparent to-pink-500/10 pointer-events-none" />
+            <CardHeader className="relative">
+              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
+                Creative Activities
+              </CardTitle>
+              <CardDescription className="text-base">What you've been creating this week</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="relative">
+              <div className="space-y-4">
                 {activities.map((activity, idx) => {
                   const gradients = [
-                    'from-pink-500 to-rose-500',
-                    'from-orange-500 to-amber-500',
-                    'from-blue-500 to-cyan-500',
-                    'from-purple-500 to-fuchsia-500'
+                    'from-pink-500 via-rose-500 to-pink-600',
+                    'from-orange-500 via-amber-500 to-orange-600',
+                    'from-blue-500 via-cyan-500 to-blue-600',
+                    'from-purple-500 via-fuchsia-500 to-purple-600'
                   ];
                   return (
                     <div
                       key={activity.name}
-                      className={`flex items-center justify-between p-4 rounded-lg bg-gradient-to-r ${gradients[idx]} text-white shadow-lg hover-elevate`}
+                      className={`flex items-center justify-between p-5 rounded-xl bg-gradient-to-r ${gradients[idx]} text-white shadow-xl hover:shadow-2xl hover-elevate active-elevate-2 transition-all duration-300 hover:scale-105 animate-slide-in`}
+                      style={{ animationDelay: `${(idx + 1) * 100}ms` }}
                       data-testid={`activity-${activity.name.toLowerCase().replace(' ', '-')}`}
                     >
-                      <span className="font-semibold text-lg">{activity.name}</span>
-                      <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full">
-                        <span className="font-bold">{activity.count}</span>
-                        <span className="text-sm">sessions</span>
+                      <span className="font-bold text-xl">{activity.name}</span>
+                      <div className="flex items-center gap-2 bg-white/30 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg">
+                        <span className="font-extrabold text-lg">{activity.count}</span>
+                        <span className="text-sm font-medium">sessions</span>
                       </div>
                     </div>
                   );
@@ -130,27 +151,32 @@ export default function WeeklyMoodOverview() {
           </Card>
         </div>
 
-        <Card data-testid="card-ai-insights" className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30">
-          <CardHeader>
-            <CardTitle className="text-2xl">AI-Generated Insights</CardTitle>
-            <CardDescription>Patterns and observations about your creative journey</CardDescription>
+        <Card data-testid="card-ai-insights" className="relative overflow-hidden border-2 border-primary/20 shadow-2xl bg-gradient-to-br from-white/50 to-white/30 dark:from-white/5 dark:to-white/10 backdrop-blur-sm animate-slide-in stagger-delay-2">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-teal-500/10 pointer-events-none" />
+          <CardHeader className="relative">
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+              AI-Generated Insights
+            </CardTitle>
+            <CardDescription className="text-base">Patterns and observations about your creative journey</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-4">
+          <CardContent className="relative">
+            <div className="grid md:grid-cols-2 gap-6">
               {insights.map((insight, idx) => {
                 const gradients = [
-                  'from-emerald-400 to-teal-400',
-                  'from-cyan-400 to-blue-400',
-                  'from-violet-400 to-purple-400',
-                  'from-fuchsia-400 to-pink-400'
+                  'from-emerald-500 via-emerald-400 to-teal-500',
+                  'from-cyan-500 via-cyan-400 to-blue-500',
+                  'from-violet-500 via-violet-400 to-purple-500',
+                  'from-fuchsia-500 via-fuchsia-400 to-pink-500'
                 ];
                 return (
                   <div 
                     key={idx} 
-                    className={`p-5 rounded-lg bg-gradient-to-br ${gradients[idx]} text-white shadow-lg hover-elevate`}
+                    className={`relative p-6 rounded-2xl bg-gradient-to-br ${gradients[idx]} text-white shadow-2xl hover:shadow-3xl hover-elevate active-elevate-2 transition-all duration-300 hover:scale-105 overflow-hidden animate-scale-in`}
+                    style={{ animationDelay: `${idx * 100}ms` }}
                     data-testid={`insight-${idx}`}
                   >
-                    <p className="font-medium leading-relaxed">{insight}</p>
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
+                    <p className="relative font-semibold text-lg leading-relaxed">{insight}</p>
                   </div>
                 );
               })}

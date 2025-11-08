@@ -199,12 +199,19 @@ export default function CreativeCanvas() {
   };
 
   return (
-    <div className="min-h-screen bg-background mood-transition">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-display font-bold mb-2">Creative Canvas</h1>
-          <p className="text-muted-foreground">
-            Co-create with AI based on your current mood: <span className="text-primary font-medium capitalize">{currentMood}</span>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 mood-transition">
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        {/* Header with gradient */}
+        <div className="mb-12 text-center space-y-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
+            <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+            <span className="text-sm font-medium text-primary capitalize">Current Mood: {currentMood}</span>
+          </div>
+          <h1 className="text-5xl md:text-6xl font-display font-bold tracking-tight bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
+            Creative Canvas
+          </h1>
+          <p className="text-lg text-muted-foreground font-light max-w-2xl mx-auto">
+            Let your emotions guide your creativity. Co-create art, music, and poetry with AI.
           </p>
         </div>
 
@@ -231,36 +238,44 @@ export default function CreativeCanvas() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {activeMode === 'art' && (
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-sm font-semibold">Color Palette</p>
-                      <Badge variant="outline" className="text-xs">
-                        Mood: {currentMood}
+                  <div className="mb-6 p-6 rounded-2xl bg-gradient-to-br from-white/50 to-white/30 dark:from-white/5 dark:to-white/10 border border-white/20 backdrop-blur-sm">
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center gap-2">
+                        <Palette className="w-5 h-5 text-primary" />
+                        <p className="text-base font-bold">Mood Color Palette</p>
+                      </div>
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {currentMood}
                       </Badge>
                     </div>
-                    <div className="grid grid-cols-6 gap-3">
+                    <div className="grid grid-cols-6 gap-4 mb-4">
                       {colorPalette.map((color, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => selectColor(color)}
-                          className={`group relative aspect-square rounded-full transition-all hover:scale-110 active:scale-95 ${
-                            selectedColor === color.hex ? 'ring-4 ring-primary ring-offset-2' : 'hover:ring-2 hover:ring-primary/50'
-                          }`}
-                          style={{ backgroundColor: color.hex }}
-                          data-testid={`color-${idx}`}
-                          title={color.name}
-                        >
-                          <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        <div key={idx} className="flex flex-col items-center gap-3">
+                          <button
+                            onClick={() => selectColor(color)}
+                            className={`group relative aspect-square w-full rounded-2xl transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-110 active:scale-95 ${
+                              selectedColor === color.hex ? 'ring-4 ring-primary ring-offset-4 ring-offset-background scale-105' : 'hover:ring-2 hover:ring-primary/50 hover:ring-offset-2 hover:ring-offset-background'
+                            }`}
+                            style={{ backgroundColor: color.hex }}
+                            data-testid={`color-${idx}`}
+                            title={color.name}
+                          >
+                            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </button>
+                          <span className="text-xs font-medium text-center opacity-70 group-hover:opacity-100 transition-opacity">
                             {color.name}
                           </span>
-                        </button>
+                        </div>
                       ))}
                     </div>
                     {selectedColor && (
-                      <div className="mt-6 p-3 rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30">
-                        <p className="text-sm font-medium">
-                          Selected: <span style={{ color: selectedColor }}>{selectedColor}</span>
-                        </p>
+                      <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-purple-50 via-pink-50 to-purple-50 dark:from-purple-950/30 dark:via-pink-950/30 dark:to-purple-950/30 border border-purple-200/50 dark:border-purple-800/50 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg shadow-lg" style={{ backgroundColor: selectedColor }} />
+                          <p className="text-sm font-semibold">
+                            Selected Color: <span style={{ color: selectedColor }}>{selectedColor}</span>
+                          </p>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -313,56 +328,62 @@ export default function CreativeCanvas() {
             </Card>
           </div>
 
-          <div className="space-y-6">
-            <Card data-testid="card-ai-companion">
-              <CardHeader>
+          <div className="space-y-6 lg:sticky lg:top-6">
+            <Card className="relative overflow-hidden border-2 border-primary/20 shadow-xl" data-testid="card-ai-companion">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-pink-500/10 pointer-events-none" />
+              <CardHeader className="relative">
                 <div className="flex items-center gap-3">
-                  <Avatar className="w-10 h-10 bg-primary/10">
-                    <AvatarFallback>
-                      <Sparkles className="w-5 h-5 text-primary" />
+                  <Avatar className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg">
+                    <AvatarFallback className="bg-transparent">
+                      <Sparkles className="w-6 h-6 text-white animate-pulse" />
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <CardTitle className="text-lg">AI Muse</CardTitle>
-                    <CardDescription className="text-xs">Your creative companion</CardDescription>
+                    <CardTitle className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                      AI Muse
+                    </CardTitle>
+                    <CardDescription className="text-sm">Your creative companion</CardDescription>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="relative space-y-6">
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium">Mood-based suggestions</p>
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm font-bold text-foreground">Mood-based suggestions</p>
                     <Button
                       size="sm"
-                      variant="ghost"
+                      variant="outline"
                       onClick={regenerateSuggestion}
-                      className="gap-1 h-8"
+                      className="gap-2 h-9 hover:scale-105 transition-transform"
                       data-testid="button-regenerate"
                     >
-                      <RefreshCw className="w-3 h-3" />
-                      New
+                      <RefreshCw className="w-4 h-4" />
+                      Refresh
                     </Button>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {(suggestions[activeMode].length > 0 ? suggestions[activeMode] : fallbackSuggestions[activeMode]).map((suggestion, idx) => (
                       <Card
                         key={idx}
-                        className="p-3 hover-elevate cursor-pointer"
+                        className="p-4 hover-elevate active-elevate-2 cursor-pointer border border-primary/10 transition-all duration-200 hover:border-primary/30 hover:shadow-lg"
                         onClick={() => {
                           setUserInput(userInput + (userInput ? '\n' : '') + suggestion);
                           console.log('Applied suggestion:', suggestion);
                         }}
                         data-testid={`suggestion-${idx}`}
                       >
-                        <p className="text-sm">{suggestion}</p>
+                        <div className="flex items-start gap-3">
+                          <div className="mt-0.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                          <p className="text-sm leading-relaxed">{suggestion}</p>
+                        </div>
                       </Card>
                     ))}
                   </div>
                 </div>
 
-                <div>
-                  <p className="text-sm font-medium mb-2">Mood context</p>
-                  <Badge variant="outline" className="capitalize" data-testid="badge-mood-context">
+                <div className="pt-4 border-t border-border/50">
+                  <p className="text-sm font-semibold mb-3 text-muted-foreground">Mood context</p>
+                  <Badge variant="outline" className="capitalize text-base px-4 py-2" data-testid="badge-mood-context">
                     {currentMood}
                   </Badge>
                 </div>

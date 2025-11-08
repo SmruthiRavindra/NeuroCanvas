@@ -157,85 +157,132 @@ export default function MoodDetectionLanding() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-950 via-purple-900 to-purple-950 flex items-center justify-center px-4 py-12">
-      <div className="max-w-3xl w-full">
-        {/* Title Section */}
-        <div className="text-center mb-12">
-          <div className="flex justify-center mb-6">
-            <div className="p-4 rounded-full bg-gradient-to-br from-pink-500 to-purple-600">
-              <Sparkles className="w-12 h-12 text-white" />
-            </div>
-          </div>
-          <h1 className="text-5xl font-display font-bold text-white mb-4">
-            Detect Your Mood
-          </h1>
-          <p className="text-lg text-purple-200 max-w-2xl mx-auto">
-            Use your voice to analyze your emotional state. Speak naturally and let our AI understand how you're feeling through voice tone and patterns.
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-10 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-700" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-1000" />
+      </div>
 
-        {/* Main Container */}
-        <div className="relative bg-purple-950/50 border-2 border-purple-800 rounded-2xl overflow-hidden backdrop-blur-sm p-12">
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-16">
+        <div className="max-w-4xl w-full">
+          {/* Title Section */}
+          <div className="text-center mb-16 space-y-6">
+            <div className="flex justify-center mb-8 relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full blur-xl opacity-50 animate-pulse" />
+              <div className="relative p-5 rounded-full bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-600 shadow-2xl">
+                <Sparkles className="w-14 h-14 text-white animate-pulse" />
+              </div>
+            </div>
+            <h1 className="text-6xl md:text-7xl font-display font-bold text-white mb-6 tracking-tight">
+              Detect Your Mood
+            </h1>
+            <p className="text-xl md:text-2xl text-purple-200 max-w-2xl mx-auto leading-relaxed font-light">
+              Use your voice to analyze your emotional state. Speak naturally and let our AI understand how you're feeling.
+            </p>
+          </div>
+
+        {/* Main Container - Glassmorphism */}
+        <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl overflow-hidden shadow-2xl p-16 transition-all duration-500">
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-pink-500/10 pointer-events-none" />
+          
           {analysisState === 'idle' ? (
             /* Idle State */
-            <div className="flex flex-col items-center justify-center text-center">
-              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center mb-8">
-                <Mic className="w-16 h-16 text-white" data-testid="icon-mic" />
+            <div className="relative flex flex-col items-center justify-center text-center space-y-8">
+              <div className="relative group">
+                {/* Animated rings */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 opacity-20 blur-2xl animate-pulse" />
+                <div className="absolute inset-0 rounded-full border-2 border-purple-400/30 animate-ping" />
+                <div className="absolute inset-0 rounded-full border-2 border-pink-400/30 animate-ping delay-300" />
+                
+                {/* Main icon */}
+                <div className="relative w-40 h-40 rounded-full bg-gradient-to-br from-purple-600 via-purple-500 to-pink-600 flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform duration-300">
+                  <Mic className="w-20 h-20 text-white drop-shadow-lg" data-testid="icon-mic" />
+                </div>
               </div>
-              <p className="text-purple-200 text-xl mb-2">Ready to listen</p>
-              <p className="text-purple-300 text-sm">Click the button below to start voice analysis</p>
+              
+              <div className="space-y-3">
+                <p className="text-white text-2xl font-semibold">Ready to listen</p>
+                <p className="text-purple-200 text-lg font-light">Click the button below to start voice analysis</p>
+              </div>
             </div>
           ) : (
             /* Analyzing State */
-            <div className="flex flex-col items-center justify-center text-center">
-              <div className="relative w-32 h-32 mb-8">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 animate-pulse" />
-                <div className="absolute inset-2 rounded-full bg-purple-950 flex items-center justify-center">
-                  <Mic className="w-12 h-12 text-pink-400 animate-pulse" />
+            <div className="relative flex flex-col items-center justify-center text-center space-y-8">
+              <div className="relative w-40 h-40">
+                {/* Pulsing background glow */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 opacity-50 animate-pulse blur-2xl" />
+                
+                {/* Multiple animated rings */}
+                <div className="absolute inset-0 rounded-full border-4 border-pink-400/50 animate-ping" />
+                <div className="absolute inset-2 rounded-full border-4 border-purple-400/50 animate-ping delay-150" />
+                <div className="absolute inset-4 rounded-full border-4 border-indigo-400/50 animate-ping delay-300" />
+                
+                {/* Center icon container */}
+                <div className="absolute inset-8 rounded-full bg-gradient-to-br from-purple-900 to-indigo-900 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-2xl">
+                  <Mic className="w-16 h-16 text-pink-400 animate-pulse" />
                 </div>
               </div>
-              <Loader2 className="w-8 h-8 text-pink-500 animate-spin mb-4" />
-              <p className="text-white text-2xl font-semibold mb-2">
-                Analyzing your voice...
-              </p>
-              <p className="text-purple-200">
-                Processing tone, pitch, and emotional patterns
-              </p>
+              
+              <div className="space-y-4">
+                <Loader2 className="w-10 h-10 text-pink-400 animate-spin mx-auto" />
+                <p className="text-white text-3xl font-bold">
+                  Analyzing your voice...
+                </p>
+                <p className="text-purple-200 text-lg font-light">
+                  Processing tone, pitch, and emotional patterns
+                </p>
+              </div>
             </div>
           )}
         </div>
 
         {/* Action Button */}
-        <div className="mt-8 flex justify-center">
+        <div className="mt-12 flex justify-center">
           <Button
             onClick={analyzeVoice}
             disabled={analysisState === 'analyzing'}
             size="lg"
-            className={`h-16 px-12 text-lg font-semibold transition-all ${
+            className={`relative h-18 px-16 text-xl font-semibold transition-all duration-300 rounded-2xl shadow-2xl overflow-hidden group ${
               analysisState === 'analyzing'
-                ? 'bg-purple-900 hover:bg-purple-900'
-                : 'bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700'
+                ? 'bg-purple-900/50 cursor-not-allowed'
+                : 'bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 hover:from-pink-500 hover:via-purple-500 hover:to-indigo-500 hover:scale-105 active:scale-95 hover:shadow-pink-500/50'
             }`}
             data-testid="button-analyze-voice"
           >
-            {analysisState === 'analyzing' ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Analyzing...
-              </>
-            ) : (
-              <>
-                <Mic className="w-5 h-5 mr-2" />
-                Start Voice Analysis
-              </>
+            {/* Button glow effect */}
+            {analysisState === 'idle' && (
+              <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-400 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300" />
             )}
+            
+            <span className="relative flex items-center gap-3">
+              {analysisState === 'analyzing' ? (
+                <>
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Mic className="w-6 h-6 group-hover:animate-pulse" />
+                  Start Voice Analysis
+                </>
+              )}
+            </span>
           </Button>
         </div>
 
         {/* Info Text */}
-        <p className="text-center text-purple-300 text-sm mt-6">
-          You'll be prompted to allow microphone access. Speak naturally for 10 seconds - our AI will analyze your voice pitch, tone, and energy to detect your mood.
-        </p>
+        <div className="mt-8 text-center space-y-2">
+          <p className="text-purple-200 text-base font-light">
+            You'll be prompted to allow microphone access.
+          </p>
+          <p className="text-purple-300 text-sm font-light">
+            Speak naturally for 10 seconds - our AI analyzes your voice pitch, tone, and energy
+          </p>
+        </div>
+        </div>
       </div>
     </div>
   );
