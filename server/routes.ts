@@ -4,6 +4,9 @@ import { storage } from "./storage";
 import { analyzeMoodFromText, generateCreativeSuggestions, chatAboutHobby } from "./gemini";
 import { sunoClient } from "./suno";
 
+// In-memory cache for webhook data (Suno API callbacks)
+const musicTaskCache = new Map<string, any>();
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Multimodal mood detection endpoint (voice + video)
   app.post("/api/analyze-mood", async (req, res) => {
@@ -160,8 +163,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sunoPrompt = `${prompt}. ${musicConfig.prompts.map(p => p.text).join('. ')}`;
       const sunoStyle = persona.musicGenres.join(', ');
 
+      // Build callback URL for Suno webhook
+      const protocol = req.protocol;
+      const host = req.get('host');
+      const callbackUrl = `${protocol}://${host}/api/suno-webhook`;
+
       // Generate music using Suno API
-      console.log('🎵 Calling Suno API with:', { sunoPrompt, sunoStyle, personaName: persona.displayName });
+      console.log('🎵 Calling Suno API with:', { sunoPrompt, sunoStyle, personaName: persona.displayName, callbackUrl });
       const sunoResponse = await sunoClient.generateMusic({
         prompt: sunoPrompt,
         customMode: true,
@@ -171,6 +179,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         model: 'V4_5',
         vocalGender: persona.gender === 'male' ? 'm' : 'f',
         styleWeight: 0.7,
+        callbackUrl,
       });
 
       console.log('✅ Suno response:', sunoResponse);
@@ -198,10 +207,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Webhook endpoint for Suno API callbacks
+  app.post("/api/suno-webhook", async (req, res) => {
+    try {
+      console.log('📥 Suno webhook received:', JSON.stringify(req.body, null, 2));
+      const webhookData = req.body;
+      
+      // Store the task status in our in-memory cache
+      musicTaskCache.set(webhookData.task_id, webhookData);
+      
+      res.json({ success: true, message: 'Webhook received' });
+    } catch (error: any) {
+      console.error("Error processing Suno webhook:", error);
+      res.status(500).json({ 
+        error: "Failed to process webhook",
+        details: error.message 
+      });
+    }
+  });
+
   // Get music generation status
   app.get("/api/music-status/:taskId", async (req, res) => {
     try {
       const { taskId } = req.params;
+      
+      // First check our webhook cache
+      const cachedStatus = musicTaskCache.get(taskId);
+      if (cachedStatus) {
+        console.log('✅ Returning cached status for task:', taskId);
+        res.json(cachedStatus);
+        return;
+      }
+      
+      // Fall back to polling Suno API
       const status = await sunoClient.getTaskStatus(taskId);
       res.json(status);
     } catch (error: any) {

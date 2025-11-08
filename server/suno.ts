@@ -16,6 +16,7 @@ export interface SunoGenerateRequest {
   model?: 'V3_5' | 'V4' | 'V4_5' | 'V4_5PLUS' | 'V5';
   vocalGender?: 'm' | 'f';
   styleWeight?: number;
+  callbackUrl?: string;
 }
 
 export interface SunoTrack {
@@ -74,6 +75,7 @@ export class SunoClient {
         model: request.model || 'V4_5',
         vocalGender: request.vocalGender,
         styleWeight: request.styleWeight ?? 0.7,
+        callbackUrl: request.callbackUrl,
       }),
     });
 
