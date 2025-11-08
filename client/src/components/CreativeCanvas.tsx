@@ -11,132 +11,132 @@ import { useToast } from '@/hooks/use-toast';
 
 const moodColorPalettes = {
   calm: [
-    { name: 'Ocean Blue', hex: '#3B82F6', rgb: 'rgb(59, 130, 246)' },
-    { name: 'Soft Teal', hex: '#14B8A6', rgb: 'rgb(20, 184, 166)' },
-    { name: 'Lavender', hex: '#A78BFA', rgb: 'rgb(167, 139, 250)' },
-    { name: 'Mint Green', hex: '#6EE7B7', rgb: 'rgb(110, 231, 183)' },
-    { name: 'Sky Blue', hex: '#7DD3FC', rgb: 'rgb(125, 211, 252)' },
-    { name: 'Periwinkle', hex: '#C7D2FE', rgb: 'rgb(199, 210, 254)' },
+    { name: 'Ocean Blue', hex: '#3B82F6', rgb: 'rgb(59, 130, 246)', emotion: 'Tranquil & Flowing' },
+    { name: 'Soft Teal', hex: '#14B8A6', rgb: 'rgb(20, 184, 166)', emotion: 'Soothing & Balanced' },
+    { name: 'Lavender', hex: '#A78BFA', rgb: 'rgb(167, 139, 250)', emotion: 'Peaceful & Gentle' },
+    { name: 'Mint Green', hex: '#6EE7B7', rgb: 'rgb(110, 231, 183)', emotion: 'Fresh & Serene' },
+    { name: 'Sky Blue', hex: '#7DD3FC', rgb: 'rgb(125, 211, 252)', emotion: 'Open & Light' },
+    { name: 'Periwinkle', hex: '#C7D2FE', rgb: 'rgb(199, 210, 254)', emotion: 'Dreamy & Soft' },
   ],
   energetic: [
-    { name: 'Vibrant Orange', hex: '#F97316', rgb: 'rgb(249, 115, 22)' },
-    { name: 'Hot Pink', hex: '#EC4899', rgb: 'rgb(236, 72, 153)' },
-    { name: 'Electric Yellow', hex: '#FBBF24', rgb: 'rgb(251, 191, 36)' },
-    { name: 'Lime Green', hex: '#84CC16', rgb: 'rgb(132, 204, 22)' },
-    { name: 'Coral Red', hex: '#EF4444', rgb: 'rgb(239, 68, 68)' },
-    { name: 'Magenta', hex: '#D946EF', rgb: 'rgb(217, 70, 239)' },
+    { name: 'Vibrant Orange', hex: '#F97316', rgb: 'rgb(249, 115, 22)', emotion: 'Bold & Dynamic' },
+    { name: 'Hot Pink', hex: '#EC4899', rgb: 'rgb(236, 72, 153)', emotion: 'Passionate & Lively' },
+    { name: 'Electric Yellow', hex: '#FBBF24', rgb: 'rgb(251, 191, 36)', emotion: 'Bright & Exciting' },
+    { name: 'Lime Green', hex: '#84CC16', rgb: 'rgb(132, 204, 22)', emotion: 'Vibrant & Fresh' },
+    { name: 'Coral Red', hex: '#EF4444', rgb: 'rgb(239, 68, 68)', emotion: 'Powerful & Intense' },
+    { name: 'Magenta', hex: '#D946EF', rgb: 'rgb(217, 70, 239)', emotion: 'Electric & Bold' },
   ],
   sad: [
-    { name: 'Deep Navy', hex: '#1E3A8A', rgb: 'rgb(30, 58, 138)' },
-    { name: 'Slate Gray', hex: '#64748B', rgb: 'rgb(100, 116, 139)' },
-    { name: 'Muted Purple', hex: '#6366F1', rgb: 'rgb(99, 102, 241)' },
-    { name: 'Storm Blue', hex: '#475569', rgb: 'rgb(71, 85, 105)' },
-    { name: 'Charcoal', hex: '#374151', rgb: 'rgb(55, 65, 81)' },
-    { name: 'Twilight', hex: '#4C1D95', rgb: 'rgb(76, 29, 149)' },
+    { name: 'Deep Navy', hex: '#1E3A8A', rgb: 'rgb(30, 58, 138)', emotion: 'Melancholic & Deep' },
+    { name: 'Slate Gray', hex: '#64748B', rgb: 'rgb(100, 116, 139)', emotion: 'Somber & Quiet' },
+    { name: 'Muted Purple', hex: '#6366F1', rgb: 'rgb(99, 102, 241)', emotion: 'Reflective & Wistful' },
+    { name: 'Storm Blue', hex: '#475569', rgb: 'rgb(71, 85, 105)', emotion: 'Heavy & Clouded' },
+    { name: 'Charcoal', hex: '#374151', rgb: 'rgb(55, 65, 81)', emotion: 'Withdrawn & Dark' },
+    { name: 'Twilight', hex: '#4C1D95', rgb: 'rgb(76, 29, 149)', emotion: 'Pensive & Moody' },
   ],
   anxious: [
-    { name: 'Warm Terracotta', hex: '#EA580C', rgb: 'rgb(234, 88, 12)' },
-    { name: 'Soft Peach', hex: '#FED7AA', rgb: 'rgb(254, 215, 170)' },
-    { name: 'Earth Brown', hex: '#92400E', rgb: 'rgb(146, 64, 14)' },
-    { name: 'Sage Green', hex: '#16A34A', rgb: 'rgb(22, 163, 74)' },
-    { name: 'Golden Amber', hex: '#F59E0B', rgb: 'rgb(245, 158, 11)' },
-    { name: 'Clay', hex: '#B45309', rgb: 'rgb(180, 83, 9)' },
+    { name: 'Warm Terracotta', hex: '#EA580C', rgb: 'rgb(234, 88, 12)', emotion: 'Grounding & Warm' },
+    { name: 'Soft Peach', hex: '#FED7AA', rgb: 'rgb(254, 215, 170)', emotion: 'Comforting & Gentle' },
+    { name: 'Earth Brown', hex: '#92400E', rgb: 'rgb(146, 64, 14)', emotion: 'Stable & Rooted' },
+    { name: 'Sage Green', hex: '#16A34A', rgb: 'rgb(22, 163, 74)', emotion: 'Calming & Natural' },
+    { name: 'Golden Amber', hex: '#F59E0B', rgb: 'rgb(245, 158, 11)', emotion: 'Reassuring & Warm' },
+    { name: 'Clay', hex: '#B45309', rgb: 'rgb(180, 83, 9)', emotion: 'Solid & Earthy' },
   ],
   happy: [
-    { name: 'Sunshine Yellow', hex: '#FDE047', rgb: 'rgb(253, 224, 71)' },
-    { name: 'Bright Gold', hex: '#FBBF24', rgb: 'rgb(251, 191, 36)' },
-    { name: 'Warm Amber', hex: '#F59E0B', rgb: 'rgb(245, 158, 11)' },
-    { name: 'Cheerful Orange', hex: '#FB923C', rgb: 'rgb(251, 146, 60)' },
-    { name: 'Light Coral', hex: '#FCA5A5', rgb: 'rgb(252, 165, 165)' },
-    { name: 'Golden Peach', hex: '#FDBA74', rgb: 'rgb(253, 186, 116)' },
+    { name: 'Sunshine Yellow', hex: '#FDE047', rgb: 'rgb(253, 224, 71)', emotion: 'Joyful & Radiant' },
+    { name: 'Bright Gold', hex: '#FBBF24', rgb: 'rgb(251, 191, 36)', emotion: 'Cheerful & Warm' },
+    { name: 'Warm Amber', hex: '#F59E0B', rgb: 'rgb(245, 158, 11)', emotion: 'Content & Glowing' },
+    { name: 'Cheerful Orange', hex: '#FB923C', rgb: 'rgb(251, 146, 60)', emotion: 'Playful & Bright' },
+    { name: 'Light Coral', hex: '#FCA5A5', rgb: 'rgb(252, 165, 165)', emotion: 'Sweet & Delighted' },
+    { name: 'Golden Peach', hex: '#FDBA74', rgb: 'rgb(253, 186, 116)', emotion: 'Warm & Happy' },
   ],
   stressed: [
-    { name: 'Deep Red', hex: '#DC2626', rgb: 'rgb(220, 38, 38)' },
-    { name: 'Burnt Orange', hex: '#EA580C', rgb: 'rgb(234, 88, 12)' },
-    { name: 'Dark Crimson', hex: '#991B1B', rgb: 'rgb(153, 27, 27)' },
-    { name: 'Rust', hex: '#C2410C', rgb: 'rgb(194, 65, 12)' },
-    { name: 'Maroon', hex: '#7F1D1D', rgb: 'rgb(127, 29, 29)' },
-    { name: 'Terracotta', hex: '#B91C1C', rgb: 'rgb(185, 28, 28)' },
+    { name: 'Deep Red', hex: '#DC2626', rgb: 'rgb(220, 38, 38)', emotion: 'Tense & Urgent' },
+    { name: 'Burnt Orange', hex: '#EA580C', rgb: 'rgb(234, 88, 12)', emotion: 'Pressured & Hot' },
+    { name: 'Dark Crimson', hex: '#991B1B', rgb: 'rgb(153, 27, 27)', emotion: 'Strained & Heavy' },
+    { name: 'Rust', hex: '#C2410C', rgb: 'rgb(194, 65, 12)', emotion: 'Worn & Weary' },
+    { name: 'Maroon', hex: '#7F1D1D', rgb: 'rgb(127, 29, 29)', emotion: 'Overwhelmed & Dark' },
+    { name: 'Terracotta', hex: '#B91C1C', rgb: 'rgb(185, 28, 28)', emotion: 'Burdened & Intense' },
   ],
   peaceful: [
-    { name: 'Soft Green', hex: '#86EFAC', rgb: 'rgb(134, 239, 172)' },
-    { name: 'Mint', hex: '#6EE7B7', rgb: 'rgb(110, 231, 183)' },
-    { name: 'Aqua', hex: '#5EEAD4', rgb: 'rgb(94, 234, 212)' },
-    { name: 'Seafoam', hex: '#99F6E4', rgb: 'rgb(153, 246, 228)' },
-    { name: 'Jade', hex: '#34D399', rgb: 'rgb(52, 211, 153)' },
-    { name: 'Teal', hex: '#2DD4BF', rgb: 'rgb(45, 212, 191)' },
+    { name: 'Soft Green', hex: '#86EFAC', rgb: 'rgb(134, 239, 172)', emotion: 'Harmonious & Calm' },
+    { name: 'Mint', hex: '#6EE7B7', rgb: 'rgb(110, 231, 183)', emotion: 'Refreshing & Pure' },
+    { name: 'Aqua', hex: '#5EEAD4', rgb: 'rgb(94, 234, 212)', emotion: 'Tranquil & Clear' },
+    { name: 'Seafoam', hex: '#99F6E4', rgb: 'rgb(153, 246, 228)', emotion: 'Gentle & Flowing' },
+    { name: 'Jade', hex: '#34D399', rgb: 'rgb(52, 211, 153)', emotion: 'Balanced & Serene' },
+    { name: 'Teal', hex: '#2DD4BF', rgb: 'rgb(45, 212, 191)', emotion: 'Peaceful & Steady' },
   ],
   angry: [
-    { name: 'Crimson', hex: '#EF4444', rgb: 'rgb(239, 68, 68)' },
-    { name: 'Scarlet', hex: '#DC2626', rgb: 'rgb(220, 38, 38)' },
-    { name: 'Blood Red', hex: '#B91C1C', rgb: 'rgb(185, 28, 28)' },
-    { name: 'Fire', hex: '#F87171', rgb: 'rgb(248, 113, 113)' },
-    { name: 'Ruby', hex: '#991B1B', rgb: 'rgb(153, 27, 27)' },
-    { name: 'Vermillion', hex: '#FCA5A5', rgb: 'rgb(252, 165, 165)' },
+    { name: 'Crimson', hex: '#EF4444', rgb: 'rgb(239, 68, 68)', emotion: 'Fierce & Hot' },
+    { name: 'Scarlet', hex: '#DC2626', rgb: 'rgb(220, 38, 38)', emotion: 'Furious & Intense' },
+    { name: 'Blood Red', hex: '#B91C1C', rgb: 'rgb(185, 28, 28)', emotion: 'Raging & Strong' },
+    { name: 'Fire', hex: '#F87171', rgb: 'rgb(248, 113, 113)', emotion: 'Burning & Wild' },
+    { name: 'Ruby', hex: '#991B1B', rgb: 'rgb(153, 27, 27)', emotion: 'Deep & Explosive' },
+    { name: 'Vermillion', hex: '#FCA5A5', rgb: 'rgb(252, 165, 165)', emotion: 'Heated & Agitated' },
   ],
   confused: [
-    { name: 'Lavender Gray', hex: '#A78BFA', rgb: 'rgb(167, 139, 250)' },
-    { name: 'Misty Purple', hex: '#C4B5FD', rgb: 'rgb(196, 181, 253)' },
-    { name: 'Dusty Violet', hex: '#9333EA', rgb: 'rgb(147, 51, 234)' },
-    { name: 'Soft Mauve', hex: '#DDD6FE', rgb: 'rgb(221, 214, 254)' },
-    { name: 'Haze', hex: '#8B5CF6', rgb: 'rgb(139, 92, 246)' },
-    { name: 'Periwinkle', hex: '#C7D2FE', rgb: 'rgb(199, 210, 254)' },
+    { name: 'Lavender Gray', hex: '#A78BFA', rgb: 'rgb(167, 139, 250)', emotion: 'Uncertain & Hazy' },
+    { name: 'Misty Purple', hex: '#C4B5FD', rgb: 'rgb(196, 181, 253)', emotion: 'Foggy & Lost' },
+    { name: 'Dusty Violet', hex: '#9333EA', rgb: 'rgb(147, 51, 234)', emotion: 'Questioning & Clouded' },
+    { name: 'Soft Mauve', hex: '#DDD6FE', rgb: 'rgb(221, 214, 254)', emotion: 'Bewildered & Soft' },
+    { name: 'Haze', hex: '#8B5CF6', rgb: 'rgb(139, 92, 246)', emotion: 'Unclear & Puzzled' },
+    { name: 'Periwinkle', hex: '#C7D2FE', rgb: 'rgb(199, 210, 254)', emotion: 'Searching & Vague' },
   ],
   excited: [
-    { name: 'Hot Pink', hex: '#EC4899', rgb: 'rgb(236, 72, 153)' },
-    { name: 'Fuchsia', hex: '#D946EF', rgb: 'rgb(217, 70, 239)' },
-    { name: 'Magenta', hex: '#C026D3', rgb: 'rgb(192, 38, 211)' },
-    { name: 'Rose', hex: '#F472B6', rgb: 'rgb(244, 114, 182)' },
-    { name: 'Bright Pink', hex: '#F9A8D4', rgb: 'rgb(249, 168, 212)' },
-    { name: 'Vivid Purple', hex: '#E879F9', rgb: 'rgb(232, 121, 249)' },
+    { name: 'Hot Pink', hex: '#EC4899', rgb: 'rgb(236, 72, 153)', emotion: 'Thrilled & Energetic' },
+    { name: 'Fuchsia', hex: '#D946EF', rgb: 'rgb(217, 70, 239)', emotion: 'Exhilarated & Vivid' },
+    { name: 'Magenta', hex: '#C026D3', rgb: 'rgb(192, 38, 211)', emotion: 'Electrified & Bold' },
+    { name: 'Rose', hex: '#F472B6', rgb: 'rgb(244, 114, 182)', emotion: 'Eager & Bright' },
+    { name: 'Bright Pink', hex: '#F9A8D4', rgb: 'rgb(249, 168, 212)', emotion: 'Bubbly & Animated' },
+    { name: 'Vivid Purple', hex: '#E879F9', rgb: 'rgb(232, 121, 249)', emotion: 'Euphoric & Wild' },
   ],
   melancholic: [
-    { name: 'Dusk Blue', hex: '#6366F1', rgb: 'rgb(99, 102, 241)' },
-    { name: 'Twilight', hex: '#4C1D95', rgb: 'rgb(76, 29, 149)' },
-    { name: 'Midnight', hex: '#312E81', rgb: 'rgb(49, 46, 129)' },
-    { name: 'Deep Indigo', hex: '#4338CA', rgb: 'rgb(67, 56, 202)' },
-    { name: 'Somber Gray', hex: '#64748B', rgb: 'rgb(100, 116, 139)' },
-    { name: 'Stormy Blue', hex: '#475569', rgb: 'rgb(71, 85, 105)' },
+    { name: 'Dusk Blue', hex: '#6366F1', rgb: 'rgb(99, 102, 241)', emotion: 'Wistful & Fading' },
+    { name: 'Twilight', hex: '#4C1D95', rgb: 'rgb(76, 29, 149)', emotion: 'Nostalgic & Deep' },
+    { name: 'Midnight', hex: '#312E81', rgb: 'rgb(49, 46, 129)', emotion: 'Longing & Dark' },
+    { name: 'Deep Indigo', hex: '#4338CA', rgb: 'rgb(67, 56, 202)', emotion: 'Thoughtful & Heavy' },
+    { name: 'Somber Gray', hex: '#64748B', rgb: 'rgb(100, 116, 139)', emotion: 'Pensive & Muted' },
+    { name: 'Stormy Blue', hex: '#475569', rgb: 'rgb(71, 85, 105)', emotion: 'Brooding & Still' },
   ],
   confident: [
-    { name: 'Bright Cyan', hex: '#22D3EE', rgb: 'rgb(34, 211, 238)' },
-    { name: 'Electric Blue', hex: '#06B6D4', rgb: 'rgb(6, 182, 212)' },
-    { name: 'Azure', hex: '#38BDF8', rgb: 'rgb(56, 189, 248)' },
-    { name: 'Sky', hex: '#7DD3FC', rgb: 'rgb(125, 211, 252)' },
-    { name: 'Turquoise', hex: '#14B8A6', rgb: 'rgb(20, 184, 166)' },
-    { name: 'Ocean', hex: '#0EA5E9', rgb: 'rgb(14, 165, 233)' },
+    { name: 'Bright Cyan', hex: '#22D3EE', rgb: 'rgb(34, 211, 238)', emotion: 'Assured & Clear' },
+    { name: 'Electric Blue', hex: '#06B6D4', rgb: 'rgb(6, 182, 212)', emotion: 'Strong & Bold' },
+    { name: 'Azure', hex: '#38BDF8', rgb: 'rgb(56, 189, 248)', emotion: 'Powerful & Bright' },
+    { name: 'Sky', hex: '#7DD3FC', rgb: 'rgb(125, 211, 252)', emotion: 'Open & Fearless' },
+    { name: 'Turquoise', hex: '#14B8A6', rgb: 'rgb(20, 184, 166)', emotion: 'Capable & Steady' },
+    { name: 'Ocean', hex: '#0EA5E9', rgb: 'rgb(14, 165, 233)', emotion: 'Limitless & Sure' },
   ],
   blissful: [
-    { name: 'Soft Purple', hex: '#C084FC', rgb: 'rgb(192, 132, 252)' },
-    { name: 'Dreamy Violet', hex: '#A78BFA', rgb: 'rgb(167, 139, 250)' },
-    { name: 'Lavender', hex: '#DDD6FE', rgb: 'rgb(221, 214, 254)' },
-    { name: 'Lilac', hex: '#E9D5FF', rgb: 'rgb(233, 213, 255)' },
-    { name: 'Orchid', hex: '#D8B4FE', rgb: 'rgb(216, 180, 254)' },
-    { name: 'Amethyst', hex: '#9333EA', rgb: 'rgb(147, 51, 234)' },
+    { name: 'Soft Purple', hex: '#C084FC', rgb: 'rgb(192, 132, 252)', emotion: 'Euphoric & Dreamy' },
+    { name: 'Dreamy Violet', hex: '#A78BFA', rgb: 'rgb(167, 139, 250)', emotion: 'Heavenly & Light' },
+    { name: 'Lavender', hex: '#DDD6FE', rgb: 'rgb(221, 214, 254)', emotion: 'Joyous & Airy' },
+    { name: 'Lilac', hex: '#E9D5FF', rgb: 'rgb(233, 213, 255)', emotion: 'Delighted & Soft' },
+    { name: 'Orchid', hex: '#D8B4FE', rgb: 'rgb(216, 180, 254)', emotion: 'Enchanted & Sweet' },
+    { name: 'Amethyst', hex: '#9333EA', rgb: 'rgb(147, 51, 234)', emotion: 'Ecstatic & Vibrant' },
   ],
   lonely: [
-    { name: 'Cool Gray', hex: '#94A3B8', rgb: 'rgb(148, 163, 184)' },
-    { name: 'Slate', hex: '#64748B', rgb: 'rgb(100, 116, 139)' },
-    { name: 'Ash', hex: '#475569', rgb: 'rgb(71, 85, 105)' },
-    { name: 'Steel', hex: '#334155', rgb: 'rgb(51, 65, 85)' },
-    { name: 'Pewter', hex: '#1E293B', rgb: 'rgb(30, 41, 59)' },
-    { name: 'Shadow', hex: '#0F172A', rgb: 'rgb(15, 23, 42)' },
+    { name: 'Cool Gray', hex: '#94A3B8', rgb: 'rgb(148, 163, 184)', emotion: 'Isolated & Distant' },
+    { name: 'Slate', hex: '#64748B', rgb: 'rgb(100, 116, 139)', emotion: 'Detached & Quiet' },
+    { name: 'Ash', hex: '#475569', rgb: 'rgb(71, 85, 105)', emotion: 'Alone & Muted' },
+    { name: 'Steel', hex: '#334155', rgb: 'rgb(51, 65, 85)', emotion: 'Solitary & Cold' },
+    { name: 'Pewter', hex: '#1E293B', rgb: 'rgb(30, 41, 59)', emotion: 'Disconnected & Heavy' },
+    { name: 'Shadow', hex: '#0F172A', rgb: 'rgb(15, 23, 42)', emotion: 'Abandoned & Dark' },
   ],
   hopeful: [
-    { name: 'Fresh Teal', hex: '#14B8A6', rgb: 'rgb(20, 184, 166)' },
-    { name: 'Spring Green', hex: '#10B981', rgb: 'rgb(16, 185, 129)' },
-    { name: 'Emerald', hex: '#059669', rgb: 'rgb(5, 150, 105)' },
-    { name: 'Seafoam', hex: '#2DD4BF', rgb: 'rgb(45, 212, 191)' },
-    { name: 'Aquamarine', hex: '#5EEAD4', rgb: 'rgb(94, 234, 212)' },
-    { name: 'Mint', hex: '#6EE7B7', rgb: 'rgb(110, 231, 183)' },
+    { name: 'Fresh Teal', hex: '#14B8A6', rgb: 'rgb(20, 184, 166)', emotion: 'Optimistic & New' },
+    { name: 'Spring Green', hex: '#10B981', rgb: 'rgb(16, 185, 129)', emotion: 'Promising & Alive' },
+    { name: 'Emerald', hex: '#059669', rgb: 'rgb(5, 150, 105)', emotion: 'Aspiring & Rich' },
+    { name: 'Seafoam', hex: '#2DD4BF', rgb: 'rgb(45, 212, 191)', emotion: 'Renewed & Light' },
+    { name: 'Aquamarine', hex: '#5EEAD4', rgb: 'rgb(94, 234, 212)', emotion: 'Forward & Bright' },
+    { name: 'Mint', hex: '#6EE7B7', rgb: 'rgb(110, 231, 183)', emotion: 'Expectant & Fresh' },
   ],
   overwhelmed: [
-    { name: 'Burnt Sienna', hex: '#EA580C', rgb: 'rgb(234, 88, 12)' },
-    { name: 'Copper', hex: '#C2410C', rgb: 'rgb(194, 65, 12)' },
-    { name: 'Bronze', hex: '#9A3412', rgb: 'rgb(154, 52, 18)' },
-    { name: 'Rust Red', hex: '#DC2626', rgb: 'rgb(220, 38, 38)' },
-    { name: 'Mahogany', hex: '#7C2D12', rgb: 'rgb(124, 45, 18)' },
-    { name: 'Dark Amber', hex: '#92400E', rgb: 'rgb(146, 64, 14)' },
+    { name: 'Burnt Sienna', hex: '#EA580C', rgb: 'rgb(234, 88, 12)', emotion: 'Crushed & Intense' },
+    { name: 'Copper', hex: '#C2410C', rgb: 'rgb(194, 65, 12)', emotion: 'Swamped & Heavy' },
+    { name: 'Bronze', hex: '#9A3412', rgb: 'rgb(154, 52, 18)', emotion: 'Overloaded & Dense' },
+    { name: 'Rust Red', hex: '#DC2626', rgb: 'rgb(220, 38, 38)', emotion: 'Flooded & Chaotic' },
+    { name: 'Mahogany', hex: '#7C2D12', rgb: 'rgb(124, 45, 18)', emotion: 'Drowning & Dark' },
+    { name: 'Dark Amber', hex: '#92400E', rgb: 'rgb(146, 64, 14)', emotion: 'Suffocated & Deep' },
   ],
 };
 
@@ -515,7 +515,7 @@ export default function CreativeCanvas() {
                     </div>
                     <div className="grid grid-cols-6 gap-4 mb-4">
                       {colorPalette.map((color, idx) => (
-                        <div key={idx} className="flex flex-col items-center gap-3">
+                        <div key={idx} className="flex flex-col items-center gap-2">
                           <button
                             onClick={() => selectColor(color)}
                             className={`group relative aspect-square w-full rounded-2xl transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-110 active:scale-95 ${
@@ -523,13 +523,18 @@ export default function CreativeCanvas() {
                             }`}
                             style={{ backgroundColor: color.hex }}
                             data-testid={`color-${idx}`}
-                            title={color.name}
+                            title={`${color.name} - ${color.emotion}`}
                           >
                             <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                           </button>
-                          <span className="text-xs font-medium text-center opacity-70 group-hover:opacity-100 transition-opacity">
-                            {color.name}
-                          </span>
+                          <div className="text-center">
+                            <p className="text-xs font-medium opacity-70 group-hover:opacity-100 transition-opacity">
+                              {color.name}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground italic opacity-60">
+                              {color.emotion}
+                            </p>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -551,8 +556,8 @@ export default function CreativeCanvas() {
                   <div className="mb-6 p-6 rounded-2xl bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/20 dark:to-pink-950/20 border border-purple-200/50 dark:border-purple-800/50 backdrop-blur-sm">
                     <div className="flex items-center gap-2 mb-4">
                       <Sparkles className="w-5 h-5 text-purple-600" />
-                      <p className="text-base font-bold">Method Acting Guide</p>
-                      <Badge variant="outline" className="text-xs">Experience Your Art</Badge>
+                      <p className="text-base font-bold">Experience with AI</p>
+                      <Badge variant="outline" className="text-xs">Immersive Descriptions</Badge>
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">
                       Describe what you want to draw, and I'll help you experience it as if you're living it yourself.
@@ -614,64 +619,67 @@ export default function CreativeCanvas() {
                   </div>
                 )}
                 
-                <div className="space-y-2 mb-2">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant={isRecording ? 'destructive' : 'outline'}
-                      onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
-                      className="gap-2"
-                      data-testid="button-voice-recording"
-                    >
-                      {isRecording ? (
-                        <>
-                          <Square className="w-4 h-4" />
-                          Stop Dictation
-                        </>
-                      ) : (
-                        <>
-                          <Mic className="w-4 h-4" />
-                          Start Dictation
-                        </>
+                {activeMode !== 'art' && (
+                  <>
+                    <div className="space-y-2 mb-2">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant={isRecording ? 'destructive' : 'outline'}
+                          onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
+                          className="gap-2"
+                          data-testid="button-voice-recording"
+                        >
+                          {isRecording ? (
+                            <>
+                              <Square className="w-4 h-4" />
+                              Stop Dictation
+                            </>
+                          ) : (
+                            <>
+                              <Mic className="w-4 h-4" />
+                              Start Dictation
+                            </>
+                          )}
+                        </Button>
+                        {isRecording && (
+                          <Badge variant="destructive" className="animate-pulse">
+                            Listening...
+                          </Badge>
+                        )}
+                      </div>
+                      {transcript && (
+                        <div className="p-2 rounded-md bg-primary/10 border border-primary/20">
+                          <p className="text-sm text-muted-foreground italic">
+                            {transcript}
+                          </p>
+                        </div>
                       )}
-                    </Button>
-                    {isRecording && (
-                      <Badge variant="destructive" className="animate-pulse">
-                        Listening...
-                      </Badge>
-                    )}
-                  </div>
-                  {transcript && (
-                    <div className="p-2 rounded-md bg-primary/10 border border-primary/20">
-                      <p className="text-sm text-muted-foreground italic">
-                        {transcript}
-                      </p>
                     </div>
-                  )}
-                </div>
 
-                <Textarea
-                  placeholder={`Enter your ${activeMode} idea or use AI suggestions...`}
-                  className="min-h-[300px] text-base resize-none"
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  data-testid="textarea-creative-input"
-                />
+                    <Textarea
+                      placeholder={`Enter your ${activeMode} idea or use AI suggestions...`}
+                      className="min-h-[300px] text-base resize-none"
+                      value={userInput}
+                      onChange={(e) => setUserInput(e.target.value)}
+                      data-testid="textarea-creative-input"
+                    />
 
-
-                {/* Generate from custom prompt button */}
-                <div className="mt-4 flex gap-2">
-                  <Button
-                    onClick={generateFromCustomPrompt}
-                    disabled={loadingSuggestions || !userInput.trim()}
-                    className="gap-2 flex-1"
-                    variant="default"
-                    data-testid="button-generate-custom"
-                  >
-                    <Send className="w-4 h-4" />
-                    {loadingSuggestions ? 'Generating...' : 'Get AI Suggestions'}
-                  </Button>
-                </div>
+                    {/* Generate from custom prompt button */}
+                    <div className="mt-4 flex gap-2">
+                      <Button
+                        onClick={generateFromCustomPrompt}
+                        disabled={loadingSuggestions || !userInput.trim()}
+                        className="gap-2 flex-1"
+                        variant="default"
+                        data-testid="button-generate-custom"
+                      >
+                        <Send className="w-4 h-4" />
+                        {loadingSuggestions ? 'Generating...' : 'Get AI Suggestions'}
+                      </Button>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>
