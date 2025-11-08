@@ -16,7 +16,7 @@ export default function MoodDetectionLanding() {
   const [micGranted, setMicGranted] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { setMood, setConfidence, confidence } = useMood();
+  const { mood, setMood, setConfidence, confidence } = useMood();
 
   const requestCameraAccess = async () => {
     try {
@@ -45,10 +45,15 @@ export default function MoodDetectionLanding() {
     
     setAnalysisState('analyzing');
     
+    // Analyze for at least 60 seconds (1 minute)
     let progress = 0;
+    const totalDuration = 60000; // 60 seconds
+    const updateInterval = 500; // Update every 500ms
+    const increment = (updateInterval / totalDuration) * 100;
+    
     const interval = setInterval(() => {
-      progress += 5;
-      setConfidence(progress);
+      progress += increment;
+      setConfidence(Math.min(progress, 100));
       
       if (progress >= 100) {
         clearInterval(interval);
@@ -56,15 +61,15 @@ export default function MoodDetectionLanding() {
         const detectedMood = moods[Math.floor(Math.random() * moods.length)];
         setMood(detectedMood);
         setAnalysisState('complete');
-        
-        setTimeout(() => {
-          if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-          }
-          setLocation('/canvas');
-        }, 2000);
       }
-    }, 100);
+    }, updateInterval);
+  };
+
+  const proceedToCanvas = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
+    setLocation('/canvas');
   };
 
   useEffect(() => {
@@ -158,18 +163,52 @@ export default function MoodDetectionLanding() {
                     className="w-full h-full object-cover rounded-full"
                   />
                   {analysisState === 'analyzing' && (
-                    <div className="absolute inset-0 rounded-full border-4 border-primary pulse-glow" />
+                    <>
+                      <div className="absolute inset-0 rounded-full border-4 border-primary pulse-glow" />
+                      <div className="absolute inset-0 rounded-full border-4 border-primary/30 animate-ping" />
+                    </>
                   )}
                 </div>
                 
                 <div className="space-y-4">
-                  <p className="text-center text-lg font-medium" data-testid="text-analysis-status">
-                    {analysisState === 'analyzing' ? 'Analyzing your mood...' : 'Mood detected!'}
-                  </p>
-                  <Progress value={confidence} className="h-2" data-testid="progress-mood-confidence" />
-                  <p className="text-center text-sm text-muted-foreground">
-                    Confidence: {confidence}%
-                  </p>
+                  {analysisState === 'analyzing' ? (
+                    <>
+                      <p className="text-center text-lg font-medium" data-testid="text-analysis-status">
+                        Analyzing your mood...
+                      </p>
+                      <p className="text-center text-sm text-muted-foreground">
+                        Stay still and relaxed. We're analyzing your facial expressions and voice patterns.
+                      </p>
+                      <Progress value={confidence} className="h-2" data-testid="progress-mood-confidence" />
+                      <p className="text-center text-sm text-muted-foreground">
+                        Analysis Progress: {Math.round(confidence)}%
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-center space-y-4">
+                        <div className="inline-block p-4 rounded-full bg-primary/10">
+                          <Sparkles className="w-12 h-12 text-primary" />
+                        </div>
+                        <h2 className="text-3xl font-display font-bold capitalize" data-testid="text-detected-mood">
+                          Your mood is: {mood}
+                        </h2>
+                        <p className="text-muted-foreground">
+                          Based on your facial expressions and voice tone analysis
+                        </p>
+                        <div className="pt-4">
+                          <Button
+                            size="lg"
+                            onClick={proceedToCanvas}
+                            className="px-8"
+                            data-testid="button-proceed"
+                          >
+                            Continue to Creative Canvas
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>
