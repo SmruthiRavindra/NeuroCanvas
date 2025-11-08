@@ -664,7 +664,7 @@ export async function analyzeMusicInput(
 🎯 Your Task:
 1. Analyze the user's input to determine if it's LYRICS or a TUNE/MELODY description
 2. Generate complementary suggestions (tune for lyrics, lyrics for tune)
-3. Consider the user's emotional mood: ${mood}
+3. CRITICAL: All suggestions MUST reflect and align with the user's emotional mood: ${mood}
 
 📊 Detection Criteria:
 LYRICS indicators:
@@ -680,20 +680,22 @@ TUNE indicators:
 - Musical notation or structure references
 
 🎵 If INPUT is LYRICS:
-Provide tune/chord suggestions including:
-- Tempo (BPM)
-- Chord progressions (e.g., "Am-F-C-G", "I-V-vi-IV")
-- Instrumentation suggestions
-- Genre/style recommendations
-- Mood/feel descriptions
+Provide tune/chord suggestions that MATCH THE ${mood.toUpperCase()} MOOD including:
+- Tempo (BPM) appropriate for ${mood} feeling
+- Chord progressions that evoke ${mood} emotion
+- Instrumentation that resonates with ${mood} state
+- Genre/style recommendations matching ${mood}
+- Mood/feel descriptions aligned with ${mood}
 
 🎤 If INPUT is TUNE:
-Provide lyric suggestions including:
-- Theme or emotional core
-- 4-8 lines of original lyrics
+Provide lyric suggestions that EXPRESS THE ${mood.toUpperCase()} MOOD including:
+- Theme or emotional core reflecting ${mood}
+- 4-8 lines of original lyrics capturing ${mood} feeling
 - Rhyme scheme indication
-- Vocal style suggestions
-- Emotional tone
+- Vocal style suggestions matching ${mood}
+- Emotional tone that embodies ${mood}
+
+⚠️ IMPORTANT: Every suggestion must be specifically tailored to the ${mood} mood. Generic suggestions are not acceptable.
 
 Return JSON in this exact format:
 {
@@ -855,6 +857,66 @@ function getMoodBasedTunes(mood: string): string[] {
       `🎹 Tempo: 65 BPM | Chords: Am–F–C–Em | Minor key piano ballad`,
       `🎸 Tempo: 60 BPM | Chords: Dm–Bb–F–Am | Melancholic acoustic`,
       `🎵 Tempo: 70 BPM | Chords: Em–C–G–Am | Slow, emotional progression`
+    ],
+    anxious: [
+      `🎹 Tempo: 90 BPM | Chords: Em–C–G–D | Grounding bass line with steady rhythm`,
+      `🎸 Tempo: 95 BPM | Chords: Am–Dm–G–C | Rhythmic acoustic with calming pattern`,
+      `🎵 Tempo: 85 BPM | Chords: Bm–G–D–A | Repetitive soothing progression`
+    ],
+    stressed: [
+      `🎹 Tempo: 95 BPM | Chords: Dm–Bb–F–C | Tension-building verses with releasing chorus`,
+      `🎸 Tempo: 100 BPM | Chords: Gm–Eb–Bb–F | Medium tempo with dynamic shifts`,
+      `🎵 Tempo: 90 BPM | Chords: Em–Am–D–G | Calming down from intensity`
+    ],
+    peaceful: [
+      `🎹 Tempo: 75 BPM | Chords: F–C–Dm–Bb | Gentle flowing melody with nature sounds`,
+      `🎸 Tempo: 70 BPM | Chords: G–Em–C–D | Soft fingerstyle with open chords`,
+      `🎵 Tempo: 65 BPM | Chords: Am–F–G–C | Meditative flute and strings`
+    ],
+    angry: [
+      `🎹 Tempo: 130 BPM | Chords: Dm–A–Bb–F | Heavy percussion and power chords`,
+      `🎸 Tempo: 125 BPM | Chords: Em–B–C–G | Distorted electric guitar`,
+      `🎵 Tempo: 135 BPM | Chords: Am–E–F–C | Aggressive rhythm with strong dynamics`
+    ],
+    confused: [
+      `🎹 Tempo: 85 BPM | Chords: Am–Dm–G–C | Questioning melodic phrases`,
+      `🎸 Tempo: 80 BPM | Chords: Em–Am–Bm–G | Wandering chord progression`,
+      `🎵 Tempo: 90 BPM | Chords: Cm–Fm–Bb–Eb | Suspended chords with unresolved feel`
+    ],
+    excited: [
+      `🎹 Tempo: 145 BPM | Chords: A–E–F#m–D | Fast upbeat with building energy`,
+      `🎸 Tempo: 150 BPM | Chords: C–G–Am–F | Vibrant synths and driving beat`,
+      `🎵 Tempo: 140 BPM | Chords: E–B–C#m–A | Explosive crescendos and drops`
+    ],
+    melancholic: [
+      `🎹 Tempo: 65 BPM | Chords: Em–Am–D–G | Nostalgic cello and piano`,
+      `🎸 Tempo: 70 BPM | Chords: Am–Em–F–C | Bittersweet fingerpicked progression`,
+      `🎵 Tempo: 60 BPM | Chords: Dm–Gm–C–F | Wistful strings with minor harmonies`
+    ],
+    confident: [
+      `🎹 Tempo: 115 BPM | Chords: C–G–Am–F | Bold brass fanfares and strong bass`,
+      `🎸 Tempo: 120 BPM | Chords: E–A–B–C#m | Powerful electric guitar`,
+      `🎵 Tempo: 110 BPM | Chords: D–G–A–Bm | Triumphant major progressions`
+    ],
+    blissful: [
+      `🎹 Tempo: 80 BPM | Chords: Dmaj7–Amaj7–Emaj7–Bm7 | Ethereal synths and pads`,
+      `🎸 Tempo: 85 BPM | Chords: Cmaj7–Gmaj7–Fmaj7–Am7 | Dreamy sustained melodies`,
+      `🎵 Tempo: 75 BPM | Chords: Gmaj7–Dmaj7–Cmaj7–Em7 | Floating ambient textures`
+    ],
+    lonely: [
+      `🎹 Tempo: 70 BPM | Chords: Am–Em–F–C | Sparse solo piano or guitar`,
+      `🎸 Tempo: 65 BPM | Chords: Dm–Am–Bb–F | Minimal arrangement with space`,
+      `🎵 Tempo: 75 BPM | Chords: Em–Bm–C–G | Quiet, isolated single instrument`
+    ],
+    hopeful: [
+      `🎹 Tempo: 100 BPM | Chords: D–A–Bm–G | Ascending melodies with brightness`,
+      `🎸 Tempo: 105 BPM | Chords: C–F–G–Am | Uplifting acoustic and strings`,
+      `🎵 Tempo: 95 BPM | Chords: G–D–Em–C | Inspiring progression building to light`
+    ],
+    overwhelmed: [
+      `🎹 Tempo: 80 BPM | Chords: Gm–Eb–Bb–F | Initially complex then simplifying`,
+      `🎸 Tempo: 75 BPM | Chords: Cm–Ab–Eb–Bb | Resolving to simpler pattern`,
+      `🎵 Tempo: 85 BPM | Chords: Dm–F–Am–C | Calming down to gentle melody`
     ]
   };
   
@@ -883,6 +945,66 @@ function getMoodBasedLyrics(mood: string): string[] {
       `🎤 "Empty spaces where you used to be / Shadows of what we could see / Missing all that used to be / Lost in memory"`,
       `🎤 "Rain falls softly on the glass / Watching moments as they pass / Nothing good could ever last / Holding to the past"`,
       `🎤 "Silent tears that no one sees / Fallen to my knees / Searching for some ease / In these broken memories"`
+    ],
+    anxious: [
+      `🎤 "Heart is racing, breath unsteady now / Trying to remember how / To find my center, calm somehow / Break free from this vow"`,
+      `🎤 "Thoughts are spinning out of control / Need to find my solid ground / Take it slow, make myself whole / Let peace be found"`,
+      `🎤 "Gripping tight to what I know / Fear is just a shadow's show / Breathe in deep and let it go / Watch my courage grow"`
+    ],
+    stressed: [
+      `🎤 "Weight of the world upon my shoulders / Pressure building, growing colder / Need to find a way to hold her / Before I fold up"`,
+      `🎤 "Deadlines closing in on me / Drowning in responsibility / Searching for a way to be / Finally free"`,
+      `🎤 "Step by step, I'll make it through / One more breath, one thing to do / Breaking down what's overdue / Starting fresh and new"`
+    ],
+    peaceful: [
+      `🎤 "Morning light on tranquil waters / Everything in perfect order / Nature's song, I'm her supporter / Peace is all I've sought here"`,
+      `🎤 "Silence speaks in gentle tones / Finding rest in quiet zones / Let the world fade, I'm alone / In this sacred home"`,
+      `🎤 "Harmony flows through my being / Every breath, a peaceful feeling / Wounds of yesterday are healing / Truth I'm now revealing"`
+    ],
+    angry: [
+      `🎤 "Fire burning deep inside / Won't let them see me hide / Standing tall with righteous pride / Fury I won't disguise"`,
+      `🎤 "Thunder crashing in my mind / Done with being pushed behind / Breaking chains of every kind / Freedom I will find"`,
+      `🎤 "Rage like lightning in my soul / Shattered pieces made me whole / Taking back complete control / Playing my own role"`
+    ],
+    confused: [
+      `🎤 "Lost between the what and why / Questions circle, multiply / Truth and lies begin to fly / Can't tell earth from sky"`,
+      `🎤 "Every path looks just the same / Don't even know my own name / In this never-ending game / Who's to blame?"`,
+      `🎤 "Searching for a guiding star / Wonder who and what we are / Answers feel so very far / From where we are"`
+    ],
+    excited: [
+      `🎤 "Lightning dancing in my chest / This feeling is the best / Ready for this brand new quest / Put me to the test"`,
+      `🎤 "Can't contain this energy / Everything's a possibility / Breaking free from gravity / Living wild and free"`,
+      `🎤 "Counting seconds till it starts / Electric fire in our hearts / This is where the future sparks / We're creating art"`
+    ],
+    melancholic: [
+      `🎤 "Bittersweet like autumn rain / Beauty mixed with all this pain / Memories that still remain / Echoes of your name"`,
+      `🎤 "Fading photos, distant sighs / Watching as the daylight dies / Truth beneath the alibis / Goodbye after goodbye"`,
+      `🎤 "Wistful dreams of what could be / Ghosts of our what used to be / Haunted by the memory / Of how we used to be"`
+    ],
+    confident: [
+      `🎤 "Standing tall, I know my worth / Claimed my power since my birth / Shaking up the earth / Showing what I'm worth"`,
+      `🎤 "No more doubt within my mind / Left my fears all behind / Destiny that I'll define / Victory I'll find"`,
+      `🎤 "Walking with my head held high / Reaching for the endless sky / Never asking how or why / Born to fly"`
+    ],
+    blissful: [
+      `🎤 "Floating on a cloud of dreams / Nothing's quite what it seems / Pure euphoria in streams / Bursting at the seams"`,
+      `🎤 "Every color, every sound / Perfect harmony I've found / Feet above the ground / Bliss is all around"`,
+      `🎤 "Heaven's closer than I thought / Found the peace I always sought / Can't be bought or taught / In this moment caught"`
+    ],
+    lonely: [
+      `🎤 "Empty echoes fill my room / Silence like a heavy gloom / Waiting for someone to / Chase away this tomb"`,
+      `🎤 "Phone that never seems to ring / Longing for what morning brings / Isolated from all things / Clipped my wings"`,
+      `🎤 "Walking streets I've walked before / But now I'm on my own once more / Searching for an open door / To something more"`
+    ],
+    hopeful: [
+      `🎤 "Tomorrow holds a brighter day / Darkness slowly fades away / Finding strength to make my way / To where I'll stay"`,
+      `🎤 "Seeds I've planted start to grow / Light returns with gentle glow / Better days ahead I know / Watch me grow"`,
+      `🎤 "Dawn is breaking through the night / Everything will be alright / Holding on with all my might / To this new light"`
+    ],
+    overwhelmed: [
+      `🎤 "Too much noise, can't find my center / Drowning in what I must enter / Need a moment to remember / How to be tender"`,
+      `🎤 "Chaos swirling all around / Trying to find solid ground / One thing at a time I've found / Peace can still be found"`,
+      `🎤 "Simplifying all the mess / Learning how to do with less / Breathing through the stress / Finding rest"`
     ]
   };
   
