@@ -81,10 +81,10 @@ export default function MoodDetectionLanding() {
 
           recognition.start();
 
-          // Stop recognition after 10 seconds
+          // Stop recognition after 18 seconds
           setTimeout(() => {
             recognition.stop();
-          }, 10000);
+          }, 18000);
         });
       };
 
@@ -144,13 +144,13 @@ export default function MoodDetectionLanding() {
         voiceFeatures.samples++;
       }, 100);
 
-      // Start speech recognition (runs for 10 seconds)
+      // Start speech recognition (runs for 18 seconds)
       const recognitionPromise = startRecognition().catch(err => {
         console.warn('Recognition failed:', err);
         return { transcript: '', hasTranscript: false };
       });
 
-      // Analyze for 10 seconds
+      // Analyze for 18 seconds
       setTimeout(async () => {
         clearInterval(analyzeInterval);
         mediaRecorder.stop();
