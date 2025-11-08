@@ -4,25 +4,33 @@ import { GoogleGenAI } from "@google/genai";
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export async function analyzeMoodFromText(userInput: string): Promise<{
-  mood: 'calm' | 'energetic' | 'sad' | 'anxious';
+  mood: 'calm' | 'energetic' | 'sad' | 'anxious' | 'happy' | 'stressed' | 'peaceful' | 'angry' | 'confused' | 'excited' | 'melancholic' | 'confident';
   confidence: number;
   reasoning: string;
 }> {
   try {
     const systemPrompt = `You are an expert emotion detection AI. Analyze the user's spoken words and/or voice characteristics to determine their emotional state.
 
-Choose one of these moods:
-- calm: peaceful, relaxed, content, steady
-- energetic: excited, enthusiastic, motivated, upbeat
-- sad: down, melancholic, disappointed, low
-- anxious: worried, stressed, nervous, uncertain
+Choose the BEST matching mood from these 12 options:
+- calm: relaxed, content, steady, at ease
+- energetic: enthusiastic, motivated, upbeat, dynamic
+- sad: down, disappointed, low, sorrowful
+- anxious: worried, nervous, uneasy, apprehensive
+- happy: joyful, cheerful, delighted, pleased
+- stressed: overwhelmed, tense, pressured, strained
+- peaceful: serene, tranquil, harmonious, undisturbed
+- angry: frustrated, irritated, mad, hostile
+- confused: uncertain, lost, bewildered, puzzled
+- excited: thrilled, eager, pumped, anticipating
+- melancholic: blue, wistful, pensive, gloomy
+- confident: assured, determined, self-assured, capable
 
-Analyze the word choice, tone descriptors, and overall sentiment.
+Analyze the word choice, tone descriptors, and overall sentiment carefully.
 Provide a confidence score (0-100) based on how clear the emotional indicators are.
 Give brief reasoning explaining your mood choice.
 
 Respond with JSON in this exact format:
-{"mood": "calm|energetic|sad|anxious", "confidence": number, "reasoning": "brief explanation"}`;
+{"mood": "one_of_the_12_moods", "confidence": number, "reasoning": "brief explanation"}`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash-exp",
@@ -32,7 +40,10 @@ Respond with JSON in this exact format:
         responseSchema: {
           type: "object",
           properties: {
-            mood: { type: "string", enum: ["calm", "energetic", "sad", "anxious"] },
+            mood: { 
+              type: "string", 
+              enum: ["calm", "energetic", "sad", "anxious", "happy", "stressed", "peaceful", "angry", "confused", "excited", "melancholic", "confident"] 
+            },
             confidence: { type: "number" },
             reasoning: { type: "string" }
           },
@@ -52,7 +63,8 @@ Respond with JSON in this exact format:
   } catch (error) {
     console.error("Gemini mood analysis error:", error);
     // Fallback to random mood
-    const moods: Array<'calm' | 'energetic' | 'sad' | 'anxious'> = ['calm', 'energetic', 'sad', 'anxious'];
+    const moods: Array<'calm' | 'energetic' | 'sad' | 'anxious' | 'happy' | 'stressed' | 'peaceful' | 'angry' | 'confused' | 'excited' | 'melancholic' | 'confident'> = 
+      ['calm', 'energetic', 'sad', 'anxious', 'happy', 'stressed', 'peaceful', 'angry', 'confused', 'excited', 'melancholic', 'confident'];
     return {
       mood: moods[Math.floor(Math.random() * moods.length)],
       confidence: 75,
