@@ -131,7 +131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Voice synthesis endpoint (placeholder for future enhancement)
+  // Voice synthesis endpoint using Web Speech API
   app.post("/api/generate-audio", async (req, res) => {
     try {
       const { prompt, personaId, compositionType } = req.body;
@@ -145,14 +145,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Persona not found" });
       }
 
-      // Placeholder response - in future this would call a TTS/music generation service
+      // Map persona to voice parameters based on gender and style
+      const voiceConfig = {
+        pitch: persona.gender === 'female' ? 1.2 : 0.9,
+        rate: persona.voiceStyle.toLowerCase().includes('energetic') || persona.voiceStyle.toLowerCase().includes('dynamic') ? 1.15 : 
+              persona.voiceStyle.toLowerCase().includes('smooth') || persona.voiceStyle.toLowerCase().includes('gentle') ? 0.95 : 1.0,
+        volume: 1.0,
+        voiceName: persona.gender === 'female' ? 'Google UK English Female' : 'Google UK English Male',
+      };
+
       res.json({
         success: true,
-        message: `Voice synthesis for ${persona.displayName} is coming soon!`,
+        message: `🎵 Voice synthesis ready for ${persona.displayName}!`,
         persona: persona.displayName,
         prompt,
         compositionType,
-        // In future, this would include: audioUrl, duration, etc.
+        voiceConfig,
+        personaColor: persona.colorTheme,
       });
     } catch (error) {
       console.error("Error generating audio:", error);

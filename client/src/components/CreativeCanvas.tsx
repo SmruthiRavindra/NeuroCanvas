@@ -354,9 +354,49 @@ export default function CreativeCanvas() {
     },
     onSuccess: (data: any) => {
       toast({
-        title: "Voice synthesis ready!",
-        description: data.message || "Your audio is being generated",
+        title: "🎵 Playing voice synthesis!",
+        description: `${data.persona} is speaking your composition...`,
       });
+
+      // Use Web Speech API to speak the text
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(data.prompt);
+        
+        // Configure voice based on persona
+        if (data.voiceConfig) {
+          utterance.pitch = data.voiceConfig.pitch;
+          utterance.rate = data.voiceConfig.rate;
+          utterance.volume = data.voiceConfig.volume;
+        }
+
+        // Try to find and use the best matching voice
+        const voices = window.speechSynthesis.getVoices();
+        const preferredVoice = voices.find(v => 
+          v.name.includes(data.voiceConfig?.voiceName) || 
+          (data.voiceConfig?.voiceName.includes('Female') ? v.name.toLowerCase().includes('female') : v.name.toLowerCase().includes('male'))
+        ) || voices[0];
+        
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
+        }
+
+        // Cancel any ongoing speech and start new one
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+
+        utterance.onend = () => {
+          toast({
+            title: "✨ Synthesis complete!",
+            description: "Voice playback finished",
+          });
+        };
+      } else {
+        toast({
+          title: "Browser not supported",
+          description: "Your browser doesn't support voice synthesis",
+          variant: "destructive"
+        });
+      }
     },
     onError: (error: any) => {
       toast({
