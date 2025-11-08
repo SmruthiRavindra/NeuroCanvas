@@ -11,6 +11,7 @@ import CanvasPage from "@/pages/CanvasPage";
 import JournalPage from "@/pages/JournalPage";
 import OverviewPage from "@/pages/OverviewPage";
 import DiscoverPage from "@/pages/DiscoverPage";
+import SettingsPage from "@/pages/SettingsPage";
 import LoginRegisterPage from "@/pages/LoginRegisterPage";
 import GuardianSetupPage from "@/pages/GuardianSetupPage";
 import OnboardingPage from "@/pages/OnboardingPage";
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/journal" component={JournalPage} />
       <Route path="/overview" component={OverviewPage} />
       <Route path="/discover" component={DiscoverPage} />
+      <Route path="/settings" component={SettingsPage} />
       <Route component={NotFound} />
     </Switch>
   );

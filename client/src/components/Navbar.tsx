@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'wouter';
-import { Palette, BookOpen, BarChart3, Lightbulb, LogOut, User } from 'lucide-react';
+import { Palette, BookOpen, BarChart3, Lightbulb, LogOut, User, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -96,6 +96,12 @@ export default function Navbar() {
                   <DropdownMenuItem className="cursor-pointer" data-testid="menu-item-profile">
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer" asChild data-testid="menu-item-settings">
+                    <Link href="/settings">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
