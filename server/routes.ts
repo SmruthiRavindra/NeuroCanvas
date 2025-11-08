@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { analyzeMoodFromText, generateCreativeSuggestions, chatAboutHobby, suggestYouTubeChannels } from "./gemini";
+import { analyzeMoodFromText, generateCreativeSuggestions, chatAboutHobby, suggestYouTubeChannels, generateMethodActingDescription } from "./gemini";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Multimodal mood detection endpoint (voice + video)
@@ -144,6 +144,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error suggesting YouTube channels:", error);
       res.status(500).json({ error: "Failed to suggest channels" });
+    }
+  });
+
+  // Method Acting chatbot endpoint for artwork descriptions
+  app.post("/api/method-acting-chat", async (req, res) => {
+    try {
+      const { drawingPrompt, mood } = req.body;
+      if (!drawingPrompt || !mood) {
+        return res.status(400).json({ error: "Drawing prompt and mood are required" });
+      }
+
+      const result = await generateMethodActingDescription(drawingPrompt, mood);
+      res.json(result);
+    } catch (error) {
+      console.error("Error in method acting chat:", error);
+      res.status(500).json({ error: "Failed to generate description" });
     }
   });
 
