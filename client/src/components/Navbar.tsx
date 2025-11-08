@@ -1,16 +1,14 @@
 import { Link, useLocation } from 'wouter';
-import { Palette, BookOpen, BarChart3, Users, Lightbulb, Sparkles } from 'lucide-react';
+import { Palette, BookOpen, BarChart3, Lightbulb, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useMood } from '@/contexts/MoodContext';
-import PersonaSelector from './PersonaSelector';
 
 const navItems = [
   { path: '/canvas', label: 'Creative Canvas', icon: Palette },
   { path: '/journal', label: 'Journal', icon: BookOpen },
   { path: '/overview', label: 'Weekly Mood', icon: BarChart3 },
-  { path: '/community', label: 'Community', icon: Users },
   { path: '/discover', label: 'Discover Hobbies', icon: Lightbulb },
 ];
 
@@ -76,11 +74,6 @@ export default function Navbar() {
                 </AvatarFallback>
               </Avatar>
             </div>
-          </div>
-          
-          {/* AI Voice Personas Row */}
-          <div className="border-t border-border/30 pt-2">
-            <PersonaSelector compact />
           </div>
         </div>
       </div>

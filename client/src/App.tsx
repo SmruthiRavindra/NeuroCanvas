@@ -9,7 +9,6 @@ import HomePage from "@/pages/HomePage";
 import CanvasPage from "@/pages/CanvasPage";
 import JournalPage from "@/pages/JournalPage";
 import OverviewPage from "@/pages/OverviewPage";
-import CommunityPage from "@/pages/CommunityPage";
 import DiscoverPage from "@/pages/DiscoverPage";
 
 function Router() {
@@ -19,7 +18,6 @@ function Router() {
       <Route path="/canvas" component={CanvasPage} />
       <Route path="/journal" component={JournalPage} />
       <Route path="/overview" component={OverviewPage} />
-      <Route path="/community" component={CommunityPage} />
       <Route path="/discover" component={DiscoverPage} />
       <Route component={NotFound} />
     </Switch>
