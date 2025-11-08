@@ -264,8 +264,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? `${transcript}. ${voiceFeatures?.characteristics || ''}`
         : voiceFeatures?.characteristics || '';
 
-      // Analyze using Gemini/local fallback
-      const result = await analyzeMoodFromText(textAnalysis);
+      // Get userId if authenticated for API key rotation
+      const userId = req.isAuthenticated() ? (req.user as Express.User).id : undefined;
+
+      // Analyze using Gemini/local fallback with key rotation
+      const result = await analyzeMoodFromText(textAnalysis, userId);
 
       // If we have video emotions, fuse them with voice analysis
       let finalResult = result;

@@ -1,17 +1,102 @@
 import { GoogleGenAI } from "@google/genai";
+import { storage } from "./storage";
 
 // Integration reference: blueprint:javascript_gemini
-const ai = new GoogleGenAI({ 
-  apiKey: process.env.GEMINI_API_KEY || "",
-});
 
-// Lyria RealTime client for music generation
-const lyriaClient = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || "",
-  apiVersion: "v1alpha"
-});
+// Helper function to create a Gemini client with a specific API key
+function createGeminiClient(apiKey: string, apiVersion?: string) {
+  return new GoogleGenAI({ 
+    apiKey,
+    ...(apiVersion && { apiVersion }),
+  });
+}
 
-export async function analyzeMoodFromText(userInput: string): Promise<{
+// Helper function to get all available API keys for a user
+async function getAvailableApiKeys(userId?: string): Promise<string[]> {
+  const keys: string[] = [];
+  
+  // Add user's API keys if they're logged in
+  if (userId) {
+    try {
+      const userKeys = await storage.getActiveApiKeys(userId);
+      keys.push(...userKeys.map(k => k.apiKey));
+    } catch (error) {
+      console.error("Error fetching user API keys:", error);
+    }
+  }
+  
+  // Always add environment variable key as fallback
+  if (process.env.GEMINI_API_KEY) {
+    keys.push(process.env.GEMINI_API_KEY);
+  }
+  
+  return keys;
+}
+
+// Helper function to check if an error is a quota/rate limit error
+function isQuotaError(error: any): boolean {
+  if (!error) return false;
+  
+  const errorMessage = error.message?.toLowerCase() || '';
+  const errorString = String(error).toLowerCase();
+  
+  return (
+    errorMessage.includes('quota') ||
+    errorMessage.includes('rate limit') ||
+    errorMessage.includes('429') ||
+    errorString.includes('quota') ||
+    errorString.includes('rate limit') ||
+    error.status === 429
+  );
+}
+
+// Wrapper function that tries API keys with rotation on quota errors
+async function withKeyRotation<T>(
+  userId: string | undefined,
+  apiCall: (client: GoogleGenAI) => Promise<T>,
+  apiVersion?: string
+): Promise<T> {
+  const apiKeys = await getAvailableApiKeys(userId);
+  
+  if (apiKeys.length === 0) {
+    throw new Error("No API keys available. Please add a Gemini API key in Settings or set GEMINI_API_KEY environment variable.");
+  }
+  
+  let lastError: any;
+  
+  for (let i = 0; i < apiKeys.length; i++) {
+    try {
+      const client = createGeminiClient(apiKeys[i], apiVersion);
+      const result = await apiCall(client);
+      
+      // If successful, log which key was used (without exposing the full key)
+      const keyPreview = `${apiKeys[i].substring(0, 10)}...`;
+      console.log(`Successfully used API key: ${keyPreview} (attempt ${i + 1}/${apiKeys.length})`);
+      
+      return result;
+    } catch (error) {
+      lastError = error;
+      
+      // If it's a quota error and we have more keys to try, continue
+      if (isQuotaError(error) && i < apiKeys.length - 1) {
+        const keyPreview = `${apiKeys[i].substring(0, 10)}...`;
+        console.warn(`Quota limit reached for API key ${keyPreview}, trying next key...`);
+        continue;
+      }
+      
+      // If it's not a quota error or it's the last key, throw the error
+      throw error;
+    }
+  }
+  
+  throw lastError || new Error("All API keys exhausted");
+}
+
+// Default clients for backward compatibility (using env var)
+const ai = createGeminiClient(process.env.GEMINI_API_KEY || "");
+const lyriaClient = createGeminiClient(process.env.GEMINI_API_KEY || "", "v1alpha");
+
+export async function analyzeMoodFromText(userInput: string, userId?: string): Promise<{
   mood: 'calm' | 'energetic' | 'sad' | 'anxious' | 'happy' | 'stressed' | 'peaceful' | 'angry' | 'confused' | 'excited' | 'melancholic' | 'confident' | 'blissful' | 'lonely' | 'hopeful' | 'overwhelmed';
   confidence: number;
   reasoning: string;
@@ -44,34 +129,36 @@ Give brief reasoning explaining your mood choice.
 Respond with JSON in this exact format:
 {"mood": "one_of_the_16_moods", "confidence": number, "reasoning": "brief explanation"}`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash-exp",
-      config: {
-        systemInstruction: systemPrompt,
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: "object",
-          properties: {
-            mood: { 
-              type: "string", 
-              enum: ["calm", "energetic", "sad", "anxious", "happy", "stressed", "peaceful", "angry", "confused", "excited", "melancholic", "confident", "blissful", "lonely", "hopeful", "overwhelmed"] 
+    const result = await withKeyRotation(userId, async (client) => {
+      const response = await client.models.generateContent({
+        model: "gemini-2.0-flash-exp",
+        config: {
+          systemInstruction: systemPrompt,
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "object",
+            properties: {
+              mood: { 
+                type: "string", 
+                enum: ["calm", "energetic", "sad", "anxious", "happy", "stressed", "peaceful", "angry", "confused", "excited", "melancholic", "confident", "blissful", "lonely", "hopeful", "overwhelmed"] 
+              },
+              confidence: { type: "number" },
+              reasoning: { type: "string" }
             },
-            confidence: { type: "number" },
-            reasoning: { type: "string" }
-          },
-          required: ["mood", "confidence", "reasoning"]
-        }
-      },
-      contents: `Analyze this input for emotional state: "${userInput}"`
+            required: ["mood", "confidence", "reasoning"]
+          }
+        },
+        contents: `Analyze this input for emotional state: "${userInput}"`
+      });
+
+      const rawJson = response.text;
+      if (!rawJson) {
+        throw new Error("Empty response from Gemini");
+      }
+      return JSON.parse(rawJson);
     });
 
-    const rawJson = response.text;
-    if (rawJson) {
-      const data = JSON.parse(rawJson);
-      return data;
-    }
-    
-    throw new Error("Empty response from Gemini");
+    return result;
   } catch (error) {
     console.error("Gemini mood analysis error:", error);
     // Intelligent local fallback analysis
@@ -257,12 +344,13 @@ export async function generateCreativeSuggestions(
   mood: string,
   mode: 'music' | 'art' | 'poetry',
   context?: string,
-  customPrompt?: string
+  customPrompt?: string,
+  userId?: string
 ): Promise<string[]> {
   try {
     // Special handling for Music Mode - detect LYRICS vs TUNE
     if (mode === 'music' && customPrompt) {
-      return await generateMusicSuggestions(customPrompt, mood);
+      return await generateMusicSuggestions(customPrompt, mood, userId);
     }
 
     const baseContext = customPrompt 
@@ -281,25 +369,27 @@ For poetry: suggest evocative words, themes, or imagery
 Return ONLY a JSON array of exactly 3 short suggestion strings (each under 60 characters).
 Example: ["Suggestion 1", "Suggestion 2", "Suggestion 3"]`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash-exp",
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: "array",
-          items: { type: "string" }
-        }
-      },
-      contents: prompt
+    const result = await withKeyRotation(userId, async (client) => {
+      const response = await client.models.generateContent({
+        model: "gemini-2.0-flash-exp",
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "array",
+            items: { type: "string" }
+          }
+        },
+        contents: prompt
+      });
+
+      const rawJson = response.text;
+      if (!rawJson) {
+        throw new Error("Empty response from Gemini");
+      }
+      return JSON.parse(rawJson).slice(0, 3);
     });
 
-    const rawJson = response.text;
-    if (rawJson) {
-      const suggestions = JSON.parse(rawJson);
-      return suggestions.slice(0, 3);
-    }
-
-    throw new Error("Empty response from Gemini");
+    return result;
   } catch (error) {
     console.error("Gemini creative suggestions error:", error);
     // Fallback suggestions
@@ -312,7 +402,7 @@ Example: ["Suggestion 1", "Suggestion 2", "Suggestion 3"]`;
 }
 
 // AI Muse for Music Mode - intelligently detects LYRICS vs TUNE
-async function generateMusicSuggestions(userInput: string, mood: string): Promise<string[]> {
+async function generateMusicSuggestions(userInput: string, mood: string, userId?: string): Promise<string[]> {
   try {
     const systemPrompt = `You are NeuroCanvas — the AI Muse integrated into a creative platform where users co-create music based on emotion.
 
@@ -349,26 +439,28 @@ You are in Music Mode. The user can provide either:
 
 Return EXACTLY 3 suggestions as a JSON array of strings.`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash-exp",
-      config: {
-        systemInstruction: systemPrompt,
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: "array",
-          items: { type: "string" }
-        }
-      },
-      contents: `User input: "${userInput}"\n\nDetect if this is LYRICS or TUNE, then generate 3 complementary creative suggestions.`
+    const result = await withKeyRotation(userId, async (client) => {
+      const response = await client.models.generateContent({
+        model: "gemini-2.0-flash-exp",
+        config: {
+          systemInstruction: systemPrompt,
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "array",
+            items: { type: "string" }
+          }
+        },
+        contents: `User input: "${userInput}"\n\nDetect if this is LYRICS or TUNE, then generate 3 complementary creative suggestions.`
+      });
+
+      const rawJson = response.text;
+      if (!rawJson) {
+        throw new Error("Empty response from Gemini");
+      }
+      return JSON.parse(rawJson).slice(0, 3);
     });
 
-    const rawJson = response.text;
-    if (rawJson) {
-      const suggestions = JSON.parse(rawJson);
-      return suggestions.slice(0, 3);
-    }
-
-    throw new Error("Empty response from Gemini");
+    return result;
   } catch (error) {
     console.error("Gemini music suggestions error:", error);
     // Intelligent fallback based on input analysis
