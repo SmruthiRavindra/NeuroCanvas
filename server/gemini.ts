@@ -601,4 +601,196 @@ The emotion swells in your chest—wild, untamed, alive. This is more than movem
   }
 }
 
+// Intelligent Music Input Analyzer - Detects lyrics vs tune and provides complementary suggestions
+export async function analyzeMusicInput(
+  userInput: string,
+  mood: string
+): Promise<{
+  inputType: 'lyrics' | 'tune';
+  complementarySuggestions: {
+    type: string;
+    suggestions: string[];
+  };
+  youtubeChannels: Array<{
+    name: string;
+    handle: string;
+    description: string;
+    genre: string;
+    subscribers: string;
+    why: string;
+  }>;
+}> {
+  try {
+    const systemPrompt = `You are NeuroCanvas Music Intelligence — an AI that analyzes musical input and provides complementary creative suggestions.
+
+🎯 Your Task:
+1. Analyze the user's input to determine if it's LYRICS or a TUNE/MELODY description
+2. Generate complementary suggestions (tune for lyrics, lyrics for tune)
+3. Consider the user's emotional mood: ${mood}
+
+📊 Detection Criteria:
+LYRICS indicators:
+- Contains complete sentences or poetic phrases
+- Emotional/narrative content
+- Verse-like structure
+- Story or message being conveyed
+
+TUNE indicators:
+- Musical terminology (BPM, chords, key, tempo, melody, rhythm)
+- Instrument descriptions
+- Sound characteristics
+- Musical notation or structure references
+
+🎵 If INPUT is LYRICS:
+Provide tune/chord suggestions including:
+- Tempo (BPM)
+- Chord progressions (e.g., "Am-F-C-G", "I-V-vi-IV")
+- Instrumentation suggestions
+- Genre/style recommendations
+- Mood/feel descriptions
+
+🎤 If INPUT is TUNE:
+Provide lyric suggestions including:
+- Theme or emotional core
+- 4-8 lines of original lyrics
+- Rhyme scheme indication
+- Vocal style suggestions
+- Emotional tone
+
+Return JSON in this exact format:
+{
+  "inputType": "lyrics" or "tune",
+  "complementarySuggestions": {
+    "type": "Tune/Chord Suggestions" or "Lyric Suggestions",
+    "suggestions": [
+      "Suggestion 1 with specific details",
+      "Suggestion 2 with specific details",
+      "Suggestion 3 with specific details"
+    ]
+  }
+}`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash-exp",
+      config: {
+        systemInstruction: systemPrompt,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "object",
+          properties: {
+            inputType: {
+              type: "string",
+              enum: ["lyrics", "tune"]
+            },
+            complementarySuggestions: {
+              type: "object",
+              properties: {
+                type: { type: "string" },
+                suggestions: {
+                  type: "array",
+                  items: { type: "string" }
+                }
+              },
+              required: ["type", "suggestions"]
+            }
+          },
+          required: ["inputType", "complementarySuggestions"]
+        }
+      },
+      contents: `User input: "${userInput}"\n\nAnalyze this musical input and provide complementary suggestions based on the detected type.`
+    });
+
+    const rawJson = response.text;
+    if (!rawJson) {
+      throw new Error("Empty response from Gemini");
+    }
+
+    const analysis = JSON.parse(rawJson);
+
+    // Generate mood-aware YouTube channel recommendations
+    const channelPrompt = analysis.inputType === 'lyrics' 
+      ? `${analysis.complementarySuggestions.suggestions[0]} - mood: ${mood}`
+      : `${userInput} - mood: ${mood}`;
+    
+    const youtubeData = await suggestYouTubeChannels(channelPrompt, mood);
+
+    return {
+      inputType: analysis.inputType,
+      complementarySuggestions: analysis.complementarySuggestions,
+      youtubeChannels: youtubeData.channels
+    };
+
+  } catch (error) {
+    console.error("Gemini music input analysis error:", error);
+    
+    // Intelligent local fallback
+    const looksLikeLyrics = userInput.split(/\s+/).length > 5 && 
+                            !(/\b(bpm|tempo|chord|melody|beat|rhythm|key|scale|instrument)\b/i.test(userInput));
+    
+    if (looksLikeLyrics) {
+      // Input appears to be lyrics - suggest tune/chords
+      return {
+        inputType: 'lyrics',
+        complementarySuggestions: {
+          type: 'Tune/Chord Suggestions',
+          suggestions: [
+            `🎹 Tempo: 90 BPM | Chords: Am–F–C–G | Soft piano with gentle strings`,
+            `🎸 Tempo: 85 BPM | Chords: Em–C–G–D | Acoustic guitar with light percussion`,
+            `🎵 Tempo: 95 BPM | Chords: Dm–Bb–F–C | Indie folk feel with warm vocals`
+          ]
+        },
+        youtubeChannels: [
+          {
+            name: "Lofi Girl",
+            handle: "@LofiGirl",
+            description: "Relaxing beats for creative work",
+            genre: "Lofi Hip Hop",
+            subscribers: "13M subscribers",
+            why: `Perfect for ${mood} mood with calming instrumentals`
+          },
+          {
+            name: "Chill Music Lab",
+            handle: "@ChillMusicLab",
+            description: "Ambient and chill music collections",
+            genre: "Chill/Ambient",
+            subscribers: "1M subscribers",
+            why: "Great for mood-based music discovery"
+          }
+        ]
+      };
+    } else {
+      // Input appears to be tune - suggest lyrics
+      return {
+        inputType: 'tune',
+        complementarySuggestions: {
+          type: 'Lyric Suggestions',
+          suggestions: [
+            `🎤 "Wandering through thoughts, finding my way / Each step uncertain, yet here I'll stay / In the quiet moments, I hear my soul"`,
+            `🎤 "Dancing with shadows, chasing the light / Every emotion feels just right / The melody carries me through the night"`,
+            `🎤 "In this space between the notes / Where every feeling floats / I find the words I couldn't say"`
+          ]
+        },
+        youtubeChannels: [
+          {
+            name: "NPR Music",
+            handle: "@nprmusic",
+            description: "Live performances and music discovery",
+            genre: "Various",
+            subscribers: "2M subscribers",
+            why: "High-quality performances matching your musical style"
+          },
+          {
+            name: "COLORS",
+            handle: "@COLORSxSTUDIOS",
+            description: "Unique live music performances",
+            genre: "Various",
+            subscribers: "5M subscribers",
+            why: "Diverse artists performing in your preferred style"
+          }
+        ]
+      };
+    }
+  }
+}
+
 export { lyriaClient };
