@@ -120,27 +120,51 @@ function analyzeLocally(input: string): {
     const energy = energyMatch ? parseInt(energyMatch[1]) : 0;
     const energyLevel = energyMatch ? energyMatch[2] : 'moderate';
     
-    // Analyze voice patterns
+    // IMPROVED voice pattern analysis - prioritize voice tone, less biased toward anxious
+    
+    // High energy + loud = energetic or excited (NOT anxious)
     if (energyLevel === 'very energetic' && volumeLevel === 'loud') {
-      return { mood: 'energetic', confidence: 72, reasoning: 'High energy and loud voice detected' };
+      return { mood: 'energetic', confidence: 75, reasoning: 'High energy and loud voice indicate energetic mood' };
     }
-    if (energyLevel === 'very energetic') {
-      return { mood: 'excited', confidence: 70, reasoning: 'High energy level suggests excitement' };
+    
+    // High energy alone = excited (NOT anxious unless other indicators present)
+    if (energyLevel === 'very energetic' && pitchLevel !== 'high') {
+      return { mood: 'excited', confidence: 73, reasoning: 'High energy suggests excitement' };
     }
-    if (pitchLevel === 'high' && (energyLevel === 'very energetic' || volumeLevel === 'loud')) {
-      return { mood: 'anxious', confidence: 70, reasoning: 'High pitch with elevated energy indicates anxiety' };
+    
+    // Moderate/high energy + normal volume = confident or happy
+    if ((energyLevel === 'very energetic' || energyLevel === 'moderate') && volumeLevel === 'normal' && pitchLevel === 'moderate') {
+      return { mood: 'confident', confidence: 72, reasoning: 'Balanced energy and moderate tone suggest confidence' };
     }
-    if (pitchLevel === 'high' && volumeLevel === 'quiet') {
-      return { mood: 'anxious', confidence: 68, reasoning: 'High quiet voice suggests nervousness' };
+    
+    // Only classify as anxious if MULTIPLE anxiety indicators present
+    const anxietyIndicators = [
+      pitchLevel === 'high',
+      energyLevel === 'very energetic',
+      volumeLevel === 'quiet'
+    ].filter(Boolean).length;
+    
+    if (anxietyIndicators >= 2) {
+      return { mood: 'anxious', confidence: 70, reasoning: 'Multiple anxiety indicators: high pitch + energy/quiet voice' };
     }
+    
+    // Low energy patterns
+    if (pitchLevel === 'low' && energyLevel === 'low energy') {
+      return { mood: 'calm', confidence: 70, reasoning: 'Low pitch and energy indicate calmness' };
+    }
+    
     if (energyLevel === 'low energy' && volumeLevel === 'quiet') {
-      return { mood: 'sad', confidence: 68, reasoning: 'Low energy and quiet voice indicate sadness' };
+      return { mood: 'melancholic', confidence: 68, reasoning: 'Low energy and quiet voice suggest melancholy' };
     }
-    if (pitchLevel === 'low' && volumeLevel === 'quiet') {
-      return { mood: 'calm', confidence: 67, reasoning: 'Low calm voice characteristics' };
+    
+    // Neutral baseline - calm or peaceful
+    if (volumeLevel === 'normal' && energyLevel === 'moderate') {
+      return { mood: 'calm', confidence: 67, reasoning: 'Moderate voice characteristics suggest calmness' };
     }
-    if (pitchLevel === 'moderate' && volumeLevel === 'quiet') {
-      return { mood: 'peaceful', confidence: 66, reasoning: 'Moderate quiet voice suggests peacefulness' };
+    
+    // Default to happy for unclear but positive-leaning patterns
+    if (pitchLevel === 'moderate' && volumeLevel !== 'quiet') {
+      return { mood: 'happy', confidence: 65, reasoning: 'Moderate pitch with normal/loud volume suggests positive mood' };
     }
     
     voiceAnalysis = { pitch, pitchLevel, volume, volumeLevel, energy, energyLevel };
@@ -183,14 +207,28 @@ function analyzeLocally(input: string): {
   
   // If no keywords matched and we have voice data, make educated guess
   if (voiceAnalysis) {
-    if (voiceAnalysis.energy > 3000) {
-      return { mood: 'energetic', confidence: 55, reasoning: 'Moderate energy detected in voice' };
+    if (voiceAnalysis.energy > 3000 && voiceAnalysis.volume > 90) {
+      return { mood: 'energetic', confidence: 58, reasoning: 'High energy and volume detected in voice' };
     }
+    
+    // FIXED: Don't classify high pitch alone as anxious
+    // High pitch can indicate happiness, excitement, or just natural voice characteristics
+    if (voiceAnalysis.pitch > 250 && voiceAnalysis.energy > 3000 && voiceAnalysis.volume < 80) {
+      return { mood: 'anxious', confidence: 55, reasoning: 'High pitch with high energy but quiet volume may indicate anxiety' };
+    }
+    
+    // High pitch with high energy and normal/loud volume = excited or happy, not anxious
+    if (voiceAnalysis.pitch > 200 && voiceAnalysis.energy > 3000) {
+      return { mood: 'excited', confidence: 58, reasoning: 'High pitch and high energy suggest excitement' };
+    }
+    
+    // High pitch alone with moderate energy = likely just happy or neutral
     if (voiceAnalysis.pitch > 200) {
-      return { mood: 'anxious', confidence: 52, reasoning: 'Higher pitch detected, may indicate anxiety' };
+      return { mood: 'happy', confidence: 54, reasoning: 'Higher pitch detected, suggests positive mood' };
     }
+    
     if (voiceAnalysis.energy < 2500 && voiceAnalysis.volume < 80) {
-      return { mood: 'sad', confidence: 53, reasoning: 'Low energy and volume suggest sadness' };
+      return { mood: 'calm', confidence: 56, reasoning: 'Low energy and volume suggest calmness' };
     }
   }
   

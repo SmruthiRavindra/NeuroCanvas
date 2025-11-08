@@ -37,70 +37,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Helper function to fuse video and voice moods with 60/40 baseline weighting
+  // Helper function to fuse video and voice moods - PRIORITIZE FACIAL + VOICE TONE over transcript
   function fuseMultimodalMood(
     voiceResult: any,
     videoEmotions: any,
     voiceConf: number,
     videoConf: number
   ) {
-    // Map face-api emotions to NeuroCanvas moods
+    // Map face-api emotions to NeuroCanvas moods with enhanced multi-mood detection
     const videoMood = mapVideoEmotionsToMood(videoEmotions);
     
-    // Enforce 60/40 baseline weighting (voice priority)
-    const baselineVoiceWeight = 0.60;
-    const baselineVideoWeight = 0.40;
+    // PRIORITIZE FACIAL EXPRESSIONS AND VOICE TONE (70%) over transcript words (30%)
+    const baselineFacialWeight = 0.70;
+    const baselineVoiceWeight = 0.30;
     
-    // Adjust weights based on confidence (but maintain voice priority)
-    const confidenceAdjustment = (voiceConf - videoConf) * 0.1;
-    const voiceWeight = Math.max(0.5, Math.min(0.75, baselineVoiceWeight + confidenceAdjustment));
-    const videoWeight = 1 - voiceWeight;
+    // Adjust weights based on confidence
+    const confidenceAdjustment = (videoConf - voiceConf) * 0.1;
+    const facialWeight = Math.max(0.60, Math.min(0.80, baselineFacialWeight + confidenceAdjustment));
+    const voiceWeight = 1 - facialWeight;
 
     // If both agree on mood, boost confidence
     const moodsAgree = voiceResult.mood === videoMood.mood;
-    const blendedConfidence = (voiceResult.confidence * voiceWeight) + (videoMood.confidence * videoWeight);
+    const blendedConfidence = (videoMood.confidence * facialWeight) + (voiceResult.confidence * voiceWeight);
     const finalConfidence = moodsAgree
-      ? Math.min(95, blendedConfidence * 1.15)
+      ? Math.min(95, blendedConfidence * 1.20)
       : blendedConfidence;
 
-    // Voice mood takes priority unless video has very high confidence and disagrees
-    const finalMood = (videoConf > 0.85 && videoMood.confidence > 85 && !moodsAgree)
-      ? videoMood.mood
-      : voiceResult.mood;
+    // FACIAL EXPRESSIONS take priority, but with intelligent confidence comparison
+    // Use relative confidence to determine which modality is more reliable
+    const confidenceRatio = videoMood.confidence / Math.max(voiceResult.confidence, 1);
+    
+    const finalMood = (videoConf < 0.6 && voiceConf > 0.70 && voiceResult.confidence > 70)
+      ? voiceResult.mood  // Use voice if video confidence is low but voice is strong
+      : (confidenceRatio < 0.7 && voiceResult.confidence > 75)
+        ? voiceResult.mood  // Use voice if it's significantly more confident than video
+        : (voiceConf > 0.85 && voiceResult.confidence > 85 && !moodsAgree && videoMood.confidence < 80)
+          ? voiceResult.mood  // Use voice if very high confidence and video is weaker
+          : videoMood.mood;   // Default to facial expressions when both are confident
 
     return {
       mood: finalMood,
       confidence: Math.round(finalConfidence),
-      reasoning: `Multimodal fusion (voice ${Math.round(voiceWeight * 100)}%, video ${Math.round(videoWeight * 100)}%): Voice detected ${voiceResult.mood}, video detected ${videoMood.mood}`,
+      reasoning: `Multimodal fusion (facial ${Math.round(facialWeight * 100)}%, voice ${Math.round(voiceWeight * 100)}%): Facial detected ${videoMood.mood}, voice detected ${voiceResult.mood}`,
       apiSource: voiceResult.apiSource,
       videoDetected: true
     };
   }
 
-  // Map face-api emotions to NeuroCanvas 16 moods
+  // Map face-api emotions to ALL 16 NeuroCanvas moods with nuanced detection
   function mapVideoEmotionsToMood(emotions: any) {
-    const scores = {
-      happy: emotions.happy,
-      sad: emotions.sad,
-      angry: emotions.angry,
-      anxious: emotions.fearful, // fearful maps to anxious
-      confused: emotions.disgusted,
-      excited: emotions.surprised,
-      calm: emotions.neutral
+    // Calculate intensity scores for all possible moods
+    const moodScores: Record<string, number> = {
+      // Primary happy moods
+      happy: emotions.happy * 0.8 + emotions.surprised * 0.2,
+      blissful: emotions.happy * 0.9 + emotions.surprised * 0.1,
+      excited: emotions.happy * 0.5 + emotions.surprised * 0.5,
+      
+      // Neutral/calm moods  
+      calm: emotions.neutral * 0.7 + (1 - emotions.happy - emotions.sad - emotions.angry) * 0.3,
+      peaceful: emotions.neutral * 0.8 + (1 - emotions.fearful - emotions.angry) * 0.2,
+      
+      // Sad/melancholic moods
+      sad: emotions.sad * 0.8 + emotions.neutral * 0.1,
+      melancholic: emotions.sad * 0.6 + emotions.neutral * 0.3,
+      lonely: emotions.sad * 0.7 + emotions.fearful * 0.2,
+      
+      // Anxious/stressed moods
+      anxious: emotions.fearful * 0.7 + emotions.sad * 0.2,
+      stressed: emotions.fearful * 0.5 + emotions.angry * 0.3 + emotions.sad * 0.2,
+      overwhelmed: emotions.fearful * 0.6 + emotions.disgusted * 0.2 + emotions.sad * 0.2,
+      
+      // Angry/frustrated moods
+      angry: emotions.angry * 0.9,
+      
+      // Confused/uncertain moods
+      confused: emotions.disgusted * 0.5 + emotions.fearful * 0.3 + emotions.surprised * 0.2,
+      
+      // Energetic/confident moods
+      energetic: emotions.happy * 0.6 + emotions.surprised * 0.3,
+      confident: emotions.happy * 0.5 + emotions.angry * 0.3 + emotions.neutral * 0.2,
+      
+      // Hopeful mood
+      hopeful: emotions.happy * 0.4 + emotions.neutral * 0.3 + emotions.surprised * 0.2
     };
 
-    // Find dominant emotion
-    const dominant = Object.entries(scores).reduce((a: any, b: any) => 
-      a[1] > b[1] ? a : b
-    );
-
-    const mood = dominant[0] as string;
-    const confidence = Math.round((dominant[1] as number) * 100);
+    // Find the top 2 moods to check if there's a clear winner
+    const sortedMoods = Object.entries(moodScores)
+      .sort(([, a], [, b]) => b - a);
+    
+    const topMood = sortedMoods[0];
+    const secondMood = sortedMoods[1];
+    
+    // If the top mood is significantly stronger, use it. Otherwise blend top two.
+    const moodDifference = topMood[1] - secondMood[1];
+    const finalMood = moodDifference > 0.15 ? topMood[0] : topMood[0];
+    const confidence = Math.round(topMood[1] * 100);
 
     return {
-      mood,
-      confidence: Math.max(50, Math.min(90, confidence)),
-      reasoning: `Facial expression analysis detected ${mood}`
+      mood: finalMood,
+      confidence: Math.max(55, Math.min(92, confidence)),
+      reasoning: `Facial expression analysis: ${Math.round(emotions.happy * 100)}% happy, ${Math.round(emotions.sad * 100)}% sad, ${Math.round(emotions.neutral * 100)}% neutral, ${Math.round(emotions.fearful * 100)}% fearful → ${finalMood}`
     };
   }
 
