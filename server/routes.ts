@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { analyzeMoodFromText, generateCreativeSuggestions, chatAboutHobby } from "./gemini";
+import { sunoClient } from "./suno";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Multimodal mood detection endpoint (voice + video)
@@ -131,7 +132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Music generation endpoint using Lyria RealTime
+  // Music generation endpoint using Suno API
   app.post("/api/generate-audio", async (req, res) => {
     try {
       const { prompt, personaId, mood } = req.body;
@@ -155,27 +156,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mood || 'happy'
       );
 
-      // Return configuration for client-side Lyria connection
-      // Note: Full Lyria RealTime integration requires WebSocket on client
+      // Build Suno-compatible prompt from AI Muse suggestions
+      const sunoPrompt = `${prompt}. ${musicConfig.prompts.map(p => p.text).join('. ')}`;
+      const sunoStyle = persona.musicGenres.join(', ');
+
+      // Generate music using Suno API
+      const sunoResponse = await sunoClient.generateMusic({
+        prompt: sunoPrompt,
+        customMode: true,
+        instrumental: false,
+        style: sunoStyle,
+        title: `${persona.displayName} - ${mood || 'Happy'}`,
+        model: 'V4_5',
+        vocalGender: persona.gender === 'male' ? 'm' : 'f',
+        styleWeight: 0.7,
+      });
+
       res.json({
         success: true,
-        message: `🎵 Generating music with ${persona.displayName}!`,
+        message: `🎵 Generating real music with ${persona.displayName}!`,
         persona: persona.displayName,
         prompt,
+        taskId: sunoResponse.task_id,
+        status: sunoResponse.status,
+        personaColor: persona.colorTheme,
         musicConfig: {
-          prompts: musicConfig.prompts,
           bpm: musicConfig.config.bpm,
-          temperature: musicConfig.config.temperature,
           genres: persona.musicGenres,
           mood: mood || 'happy'
-        },
-        personaColor: persona.colorTheme,
-        // Indicate that this uses Lyria RealTime
-        usesLyria: true
+        }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating music:", error);
-      res.status(500).json({ error: "Failed to generate music" });
+      res.status(500).json({ 
+        error: "Failed to generate music",
+        details: error.message 
+      });
+    }
+  });
+
+  // Get music generation status
+  app.get("/api/music-status/:taskId", async (req, res) => {
+    try {
+      const { taskId } = req.params;
+      const status = await sunoClient.getTaskStatus(taskId);
+      res.json(status);
+    } catch (error: any) {
+      console.error("Error fetching music status:", error);
+      res.status(500).json({ 
+        error: "Failed to fetch music status",
+        details: error.message 
+      });
     }
   });
 
