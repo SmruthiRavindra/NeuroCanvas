@@ -1,9 +1,18 @@
 import { Link, useLocation } from 'wouter';
-import { Palette, BookOpen, BarChart3, Lightbulb } from 'lucide-react';
+import { Palette, BookOpen, BarChart3, Lightbulb, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useMood } from '@/contexts/MoodContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const navItems = [
   { path: '/canvas', label: 'Creative Canvas', icon: Palette },
@@ -13,8 +22,14 @@ const navItems = [
 ];
 
 export default function Navbar() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { mood } = useMood();
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    setLocation('/');
+  };
 
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-xl bg-gradient-to-r from-background/90 via-background/95 to-background/90 border-b border-border/50 shadow-lg mood-transition">
@@ -62,11 +77,37 @@ export default function Navbar() {
                   {mood}
                 </Badge>
               )}
-              <Avatar className="w-10 h-10 ring-2 ring-primary/20 hover:ring-primary/40 transition-all cursor-pointer" data-testid="avatar-user">
-                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold">
-                  U
-                </AvatarFallback>
-              </Avatar>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Avatar className="w-10 h-10 ring-2 ring-primary/20 hover:ring-primary/40 transition-all cursor-pointer" data-testid="avatar-user">
+                    <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold">
+                      {user?.username?.charAt(0).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col gap-1">
+                      <span className="font-semibold">{user?.username}</span>
+                      <span className="text-xs text-muted-foreground">Manage your account</span>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="cursor-pointer" data-testid="menu-item-profile">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    className="cursor-pointer text-destructive focus:text-destructive" 
+                    onClick={handleLogout}
+                    data-testid="button-logout"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
