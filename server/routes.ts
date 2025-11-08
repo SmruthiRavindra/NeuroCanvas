@@ -61,16 +61,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/login", passport.authenticate("local"), (req, res) => {
-    const user = req.user as Express.User;
-    res.json({ 
-      user: {
-        id: user.id,
-        username: user.username,
-        hasCompletedGuardianSetup: user.hasCompletedGuardianSetup,
-        hasCompletedOnboarding: user.hasCompletedOnboarding,
+  app.post("/api/login", (req, res, next) => {
+    // Validate input
+    const validation = loginSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: "Invalid input", details: validation.error.issues });
+    }
+
+    // Use passport custom callback to return JSON errors
+    passport.authenticate("local", (err: any, user: Express.User | false, info: any) => {
+      if (err) {
+        return res.status(500).json({ error: "Authentication error" });
       }
-    });
+      if (!user) {
+        return res.status(401).json({ error: info?.message || "Invalid username or password" });
+      }
+
+      // Log the user in
+      req.login(user, (loginErr) => {
+        if (loginErr) {
+          return res.status(500).json({ error: "Login failed" });
+        }
+        
+        res.json({ 
+          user: {
+            id: user.id,
+            username: user.username,
+            hasCompletedGuardianSetup: user.hasCompletedGuardianSetup,
+            hasCompletedOnboarding: user.hasCompletedOnboarding,
+          }
+        });
+      });
+    })(req, res, next);
   });
 
   app.post("/api/logout", (req, res) => {
