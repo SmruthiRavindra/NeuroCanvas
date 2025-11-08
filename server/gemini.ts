@@ -107,18 +107,20 @@ function analyzeLocally(input: string): {
   const confusedWords = ['confused', 'uncertain', 'lost', 'don\'t know', 'bewildered', 'unclear', 'puzzled', 'baffled', 'perplexed', 'mixed up'];
   
   // Parse voice characteristics from formatted string
+  // Frontend sends: "Voice characteristics: Average pitch 247Hz (high-pitched), volume 10 (quiet), energy 764 (low energy)"
   let voiceAnalysis = null;
-  const pitchMatch = text.match(/pitch (\d+)hz \((high|low|moderate)-pitched\)/);
-  const volumeMatch = text.match(/volume (\d+) \((loud|quiet|normal)\)/);
-  const energyMatch = text.match(/energy (\d+) \((very energetic|low energy|moderate)\)/);
+  const pitchMatch = text.match(/pitch\s+(\d+)hz\s*\(([^)]+)-pitched\)/i);
+  const volumeMatch = text.match(/volume\s+(\d+)\s*\(([^)]+)\)/i);
+  const energyMatch = text.match(/energy\s+(\d+)\s*\(([^)]+)\)/i);
   
   if (pitchMatch || volumeMatch || energyMatch) {
     const pitch = pitchMatch ? parseInt(pitchMatch[1]) : 0;
-    const pitchLevel = pitchMatch ? pitchMatch[2] : 'moderate';
+    const pitchLevel = pitchMatch ? pitchMatch[2].toLowerCase() : 'moderate';
     const volume = volumeMatch ? parseInt(volumeMatch[1]) : 0;
-    const volumeLevel = volumeMatch ? volumeMatch[2] : 'normal';
+    const volumeLevel = volumeMatch ? volumeMatch[2].toLowerCase() : 'normal';
     const energy = energyMatch ? parseInt(energyMatch[1]) : 0;
-    const energyLevel = energyMatch ? energyMatch[2] : 'moderate';
+    // Energy level comes as "very energetic", "low energy", or "moderate"
+    const energyLevel = energyMatch ? energyMatch[2].toLowerCase().trim() : 'moderate';
     
     // IMPROVED voice pattern analysis - prioritize voice tone, less biased toward anxious
     
@@ -168,6 +170,9 @@ function analyzeLocally(input: string): {
     }
     
     voiceAnalysis = { pitch, pitchLevel, volume, volumeLevel, energy, energyLevel };
+    console.log('✓ Parsed voice characteristics:', voiceAnalysis);
+  } else {
+    console.log('✗ Could not parse voice characteristics from text:', text.substring(0, 200));
   }
   
   // Count keyword matches for each mood
@@ -198,12 +203,15 @@ function analyzeLocally(input: string): {
   if (sortedMoods.length > 0) {
     const [topMood, score] = sortedMoods[0];
     const confidence = Math.min(85, 60 + (score * 12)); // 60% base + 12% per keyword match
+    console.log(`✓ Keyword match: "${topMood}" with score ${score}`);
     return {
       mood: topMood as any,
       confidence,
       reasoning: `Detected "${topMood}" from ${score} keyword indicator(s)`
     };
   }
+  
+  console.log('✗ No keyword matches found, analyzing voice characteristics...');
   
   // If no keywords matched and we have voice data, make educated guess
   if (voiceAnalysis) {
@@ -233,10 +241,11 @@ function analyzeLocally(input: string): {
   }
   
   // True neutral fallback - be more conservative
+  console.log('⚠️ Fallback: Defaulting to calm mood (no clear emotional indicators)');
   return {
-    mood: 'confused',
-    confidence: 45,
-    reasoning: 'Unable to clearly identify emotional state from available data'
+    mood: 'calm',
+    confidence: 40,
+    reasoning: 'No clear emotional indicators detected - defaulting to calm baseline'
   };
 }
 
