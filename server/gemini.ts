@@ -201,10 +201,16 @@ function countMatches(text: string, keywords: string[]): number {
 export async function generateCreativeSuggestions(
   mood: string,
   mode: 'music' | 'art' | 'poetry',
-  context?: string
+  context?: string,
+  customPrompt?: string
 ): Promise<string[]> {
   try {
+    const baseContext = customPrompt 
+      ? `The user wants to create: "${customPrompt}". Use this as inspiration while considering their ${mood} mood.`
+      : `Generate creative suggestions that resonate with the ${mood} mood.`;
+
     const prompt = `You are a creative AI assistant helping someone in a ${mood} mood.
+${baseContext}
 Generate 3 creative suggestions for ${mode} creation.
 ${context ? `Additional context: ${context}` : ''}
 

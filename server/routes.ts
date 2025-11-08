@@ -104,15 +104,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     };
   }
 
-  // Creative suggestions endpoint
+  // Get all voice personas
+  app.get("/api/personas", async (req, res) => {
+    try {
+      const personas = await storage.getAllVoicePersonas();
+      res.json({ personas });
+    } catch (error) {
+      console.error("Error fetching personas:", error);
+      res.status(500).json({ error: "Failed to fetch personas" });
+    }
+  });
+
+  // Creative suggestions endpoint (now supports custom prompts)
   app.post("/api/creative-suggestions", async (req, res) => {
     try {
-      const { mood, mode, context } = req.body;
+      const { mood, mode, context, customPrompt } = req.body;
       if (!mood || !mode) {
         return res.status(400).json({ error: "Mood and mode are required" });
       }
 
-      const suggestions = await generateCreativeSuggestions(mood, mode, context);
+      const suggestions = await generateCreativeSuggestions(mood, mode, context, customPrompt);
       res.json({ suggestions });
     } catch (error) {
       console.error("Error generating suggestions:", error);
