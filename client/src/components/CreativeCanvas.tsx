@@ -78,11 +78,67 @@ export default function CreativeCanvas() {
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const [transcript, setTranscript] = useState('');
+  const recognitionRef = useRef<any>(null);
 
   const currentMood = mood || 'calm';
   const fallbackSuggestions = moodSuggestions[currentMood];
   const colorPalette = moodColorPalettes[currentMood];
+
+  useEffect(() => {
+    // Initialize Web Speech API
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      recognition.onresult = (event: any) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + ' ';
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+
+        if (finalTranscript) {
+          setUserInput(prev => prev + (prev ? ' ' : '') + finalTranscript);
+        }
+        setTranscript(interimTranscript);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        if (event.error === 'no-speech') {
+          console.log('No speech detected');
+        } else if (event.error === 'not-allowed') {
+          alert('Microphone access denied. Please allow microphone access to use speech-to-text.');
+        }
+      };
+
+      recognition.onend = () => {
+        if (isRecording) {
+          setIsRecording(false);
+          setTranscript('');
+        }
+      };
+
+      recognitionRef.current = recognition;
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, [isRecording]);
 
   useEffect(() => {
     fetchSuggestions(activeMode);
@@ -113,35 +169,26 @@ export default function CreativeCanvas() {
   };
 
   const startVoiceRecording = async () => {
+    if (!recognitionRef.current) {
+      alert('Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.');
+      return;
+    }
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-
-      const audioChunks: Blob[] = [];
-      mediaRecorder.ondataavailable = (event) => {
-        audioChunks.push(event.data);
-      };
-
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-        // Here you could send the audio to a speech-to-text API
-        console.log('Voice recording completed', audioBlob);
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.start();
+      recognitionRef.current.start();
       setIsRecording(true);
+      setTranscript('');
     } catch (error) {
-      console.error('Error accessing microphone:', error);
-      alert('Please allow microphone access to use voice recording');
+      console.error('Error starting speech recognition:', error);
+      alert('Failed to start speech recognition. Please try again.');
     }
   };
 
   const stopVoiceRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
+    if (recognitionRef.current && isRecording) {
+      recognitionRef.current.stop();
       setIsRecording(false);
+      setTranscript('');
     }
   };
 
@@ -219,30 +266,39 @@ export default function CreativeCanvas() {
                   </div>
                 )}
                 
-                <div className="flex items-center gap-2 mb-2">
-                  <Button
-                    size="sm"
-                    variant={isRecording ? 'destructive' : 'outline'}
-                    onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
-                    className="gap-2"
-                    data-testid="button-voice-recording"
-                  >
-                    {isRecording ? (
-                      <>
-                        <Square className="w-4 h-4" />
-                        Stop Recording
-                      </>
-                    ) : (
-                      <>
-                        <Mic className="w-4 h-4" />
-                        Voice Input
-                      </>
+                <div className="space-y-2 mb-2">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant={isRecording ? 'destructive' : 'outline'}
+                      onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
+                      className="gap-2"
+                      data-testid="button-voice-recording"
+                    >
+                      {isRecording ? (
+                        <>
+                          <Square className="w-4 h-4" />
+                          Stop Dictation
+                        </>
+                      ) : (
+                        <>
+                          <Mic className="w-4 h-4" />
+                          Start Dictation
+                        </>
+                      )}
+                    </Button>
+                    {isRecording && (
+                      <Badge variant="destructive" className="animate-pulse">
+                        Listening...
+                      </Badge>
                     )}
-                  </Button>
-                  {isRecording && (
-                    <Badge variant="destructive" className="animate-pulse">
-                      Recording...
-                    </Badge>
+                  </div>
+                  {transcript && (
+                    <div className="p-2 rounded-md bg-primary/10 border border-primary/20">
+                      <p className="text-sm text-muted-foreground italic">
+                        {transcript}
+                      </p>
+                    </div>
                   )}
                 </div>
 
