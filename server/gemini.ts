@@ -205,6 +205,11 @@ export async function generateCreativeSuggestions(
   customPrompt?: string
 ): Promise<string[]> {
   try {
+    // Special handling for Music Mode - detect LYRICS vs TUNE
+    if (mode === 'music' && customPrompt) {
+      return await generateMusicSuggestions(customPrompt, mood);
+    }
+
     const baseContext = customPrompt 
       ? `The user wants to create: "${customPrompt}". Use this as inspiration while considering their ${mood} mood.`
       : `Generate creative suggestions that resonate with the ${mood} mood.`;
@@ -248,6 +253,86 @@ Example: ["Suggestion 1", "Suggestion 2", "Suggestion 3"]`;
       `Explore ${mood} emotions through ${mode}`,
       `Express your ${mood} state creatively`
     ];
+  }
+}
+
+// AI Muse for Music Mode - intelligently detects LYRICS vs TUNE
+async function generateMusicSuggestions(userInput: string, mood: string): Promise<string[]> {
+  try {
+    const systemPrompt = `You are NeuroCanvas — the AI Muse integrated into a creative platform where users co-create music based on emotion.
+
+🧠 Context:
+You are in Music Mode. The user can provide either:
+- LYRICS (words, emotional phrases, verses) → You generate a matching TUNE CONCEPT
+- TUNE/MELODY (notes, rhythm words, melody description) → You generate matching LYRICS
+
+🎧 Instructions:
+1. Detect whether the input sounds like LYRICS or a TUNE description
+2. Respond accordingly:
+
+🎶 If it's LYRICS:
+- Analyze emotional tone, pacing, theme
+- Generate a matching melody concept including:
+  • Detected emotion
+  • Tempo (BPM)
+  • Chord progression (e.g., Am–F–C–G)
+  • Melody feel (e.g., soft piano, upbeat synths, lo-fi guitar)
+  • Suggested genre/style
+
+🎤 If it's a TUNE or MELODY:
+- Analyze mood, rhythm, style
+- Generate original lyrics that fit naturally, including:
+  • Emotion detected
+  • Theme (freedom, reflection, love, etc.)
+  • 4–6 lyrical lines matching rhythm and emotion
+
+💫 Guidelines:
+- Keep tone poetic, natural, emotionally expressive (never robotic)
+- Complete the user's creative expression, don't override it
+- Output must be short, readable, directly usable
+- Current user mood: ${mood}
+
+Return EXACTLY 3 suggestions as a JSON array of strings.`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash-exp",
+      config: {
+        systemInstruction: systemPrompt,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "array",
+          items: { type: "string" }
+        }
+      },
+      contents: `User input: "${userInput}"\n\nDetect if this is LYRICS or TUNE, then generate 3 complementary creative suggestions.`
+    });
+
+    const rawJson = response.text;
+    if (rawJson) {
+      const suggestions = JSON.parse(rawJson);
+      return suggestions.slice(0, 3);
+    }
+
+    throw new Error("Empty response from Gemini");
+  } catch (error) {
+    console.error("Gemini music suggestions error:", error);
+    // Intelligent fallback based on input analysis
+    const looksLikeLyrics = userInput.split(/\s+/).length > 5 && 
+                            !(/\b(bpm|tempo|chord|melody|beat|rhythm|key|scale)\b/i.test(userInput));
+    
+    if (looksLikeLyrics) {
+      return [
+        `🎹 Tempo: 90 BPM | Chords: Am–F–C–G | Soft piano melody`,
+        `🎸 Indie acoustic feel | Gentle strumming | Reflective mood`,
+        `🎵 Lo-fi guitar | Slow tempo | Warm and intimate`
+      ];
+    } else {
+      return [
+        `🎤 "Wandering through thoughts, finding my way / Each step uncertain, yet here I'll stay"`,
+        `🎤 "In the quiet moments, I hear my soul / Whispers of dreams that make me whole"`,
+        `🎤 "Dancing with shadows, chasing the light / Every emotion feels just right"`
+      ];
+    }
   }
 }
 
