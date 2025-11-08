@@ -140,6 +140,89 @@ const moodColorPalettes = {
   ],
 };
 
+const moodMusicData: Record<string, { lyrics: string; tune: string; chords: string }> = {
+  calm: {
+    lyrics: "Soft waves rolling, gentle breeze\nIn this moment, I find peace\nQuiet waters, steady flow\nLetting all my worries go",
+    tune: "Slow tempo at 70 BPM, flowing melody with sustained notes, piano-led with ambient pad textures",
+    chords: "C - Am - F - G (I-vi-IV-V in C major)"
+  },
+  energetic: {
+    lyrics: "Heart is racing, feel alive\nEvery moment electrified\nChase the thunder, own the day\nNothing standing in my way",
+    tune: "Upbeat tempo at 140 BPM, driving beat with syncopated rhythms, energetic brass and electronic elements",
+    chords: "E - B - C#m - A (I-V-vi-IV in E major)"
+  },
+  sad: {
+    lyrics: "Empty chair where you once sat\nMemories I can't get back\nTears like rain on windowpane\nLearning how to live with pain",
+    tune: "Slow ballad at 60 BPM, descending melodic phrases, melancholic strings and soft piano",
+    chords: "Am - F - C - G (i-VI-III-VII in A minor)"
+  },
+  anxious: {
+    lyrics: "Breathe in slowly, count to four\nFeet are planted on the floor\nStorm inside begins to ease\nFinding calm in each deep breath",
+    tune: "Moderate tempo at 90 BPM, grounding bass line, rhythmic acoustic guitar with steady percussion",
+    chords: "Em - C - G - D (i-VI-III-VII in E minor)"
+  },
+  happy: {
+    lyrics: "Sunshine dancing through my soul\nEvery piece is feeling whole\nSmiling faces all around\nJoy in every sight and sound",
+    tune: "Cheerful tempo at 120 BPM, bouncy melody with upward progressions, bright acoustic strumming",
+    chords: "G - D - Em - C (I-V-vi-IV in G major)"
+  },
+  stressed: {
+    lyrics: "Weight upon my shoulders now\nFinding strength, I don't know how\nOne more step, I'll make it through\nBreaking dawn will come for you",
+    tune: "Medium tempo at 95 BPM, tension-building verses with releasing chorus, layered instrumentation",
+    chords: "Dm - Bb - F - C (i-VI-III-VII in D minor)"
+  },
+  peaceful: {
+    lyrics: "Morning light on dewy grass\nWatching as the moments pass\nNature's song, a gentle hum\nPeaceful heart, at rest, at one",
+    tune: "Gentle tempo at 75 BPM, flowing melodic lines, flute and nature sounds with soft strings",
+    chords: "F - C - Dm - Bb (I-V-vi-IV in F major)"
+  },
+  angry: {
+    lyrics: "Fire burning deep inside\nFury I won't try to hide\nThunder crashing, breaking free\nThis is the real part of me",
+    tune: "Intense tempo at 130 BPM, heavy percussion and power chords, aggressive dynamics",
+    chords: "Dm - A - Bb - F (i-V-VI-III in D minor)"
+  },
+  confused: {
+    lyrics: "Which way should I turn today\nEvery path looks much the same\nSearching for a guiding light\nLost between the wrong and right",
+    tune: "Wandering tempo at 85 BPM, questioning melodic phrases, suspended chords and unresolved progressions",
+    chords: "Am - Dm - G - C (i-iv-VII-III in A minor)"
+  },
+  excited: {
+    lyrics: "Can't sit still, I'm ready now\nEvery dream I will allow\nStars are calling out my name\nNothing will remain the same",
+    tune: "Fast tempo at 145 BPM, building energy with crescendos, vibrant synths and driving percussion",
+    chords: "A - E - F#m - D (I-V-vi-IV in A major)"
+  },
+  melancholic: {
+    lyrics: "Fading photos, distant sighs\nEchoes of our last goodbyes\nBeauty tinged with bitter sweet\nMemories we'll never meet",
+    tune: "Slow tempo at 65 BPM, nostalgic melody with bittersweet harmonies, cello and piano",
+    chords: "Em - Am - D - G (i-iv-VII-III in E minor)"
+  },
+  confident: {
+    lyrics: "Standing tall, I know my worth\nClaimed my power since my birth\nNothing's gonna shake my ground\nIn my strength, I have found",
+    tune: "Bold tempo at 115 BPM, strong melodic statements, brass fanfares and powerful bass",
+    chords: "C - G - Am - F (I-V-vi-IV in C major)"
+  },
+  blissful: {
+    lyrics: "Floating on a cloud of dreams\nEverything's more than it seems\nPure euphoria fills my heart\nThis is just the perfect start",
+    tune: "Ethereal tempo at 80 BPM, dreamy sustained melodies, layered vocals and ambient synths",
+    chords: "Dmaj7 - Amaj7 - Emaj7 - Bm7 (Imaj7-Vmaj7-IImaj7-vim7 in D major)"
+  },
+  lonely: {
+    lyrics: "Empty echoes fill this room\nSilent shadows, endless gloom\nWaiting for a voice to call\nSomeone there to break the wall",
+    tune: "Sparse tempo at 70 BPM, minimal arrangement with space between notes, solo piano or guitar",
+    chords: "Am - Em - F - C (i-v-VI-III in A minor)"
+  },
+  hopeful: {
+    lyrics: "Tomorrow holds a brighter day\nDarkness slowly fades away\nSeeds I've planted start to grow\nLight returns, I start to glow",
+    tune: "Uplifting tempo at 100 BPM, ascending melodies with hopeful progressions, acoustic and strings",
+    chords: "D - A - Bm - G (I-V-vi-IV in D major)"
+  },
+  overwhelmed: {
+    lyrics: "Too much noise, can't find my way\nTrying hard to face the day\nStep by step, I'll simplify\nFind my center, breathe and try",
+    tune: "Calming tempo at 80 BPM, initially complex then simplifying, resolution to simple melody",
+    chords: "Gm - Eb - Bb - F (i-VI-III-VII in G minor)"
+  }
+};
+
 const moodSuggestions: Record<string, { music: string[], art: string[], poetry: string[] }> = {
   calm: {
     music: ['Soft piano melody in C major', 'Ambient soundscape with gentle strings', 'Lo-fi beats at 80 BPM'],
@@ -779,6 +862,60 @@ export default function CreativeCanvas() {
                 </div>
               </CardHeader>
               <CardContent className="relative space-y-6">
+                {/* Mood-Based Music Components */}
+                {activeMode === 'music' && !musicAnalysis && (
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-950/20 dark:to-purple-950/20 border border-blue-200/50 dark:border-blue-800/50">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Music className="w-4 h-4 text-blue-600" />
+                        <p className="text-sm font-bold">Mood-Based Music Components</p>
+                        <Badge variant="outline" className="text-xs capitalize">
+                          {currentMood}
+                        </Badge>
+                      </div>
+                      
+                      {/* Lyrics Section */}
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="w-3.5 h-3.5 text-purple-600" />
+                          <p className="text-xs font-semibold text-purple-600">Lyrics</p>
+                        </div>
+                        <div className="p-3 rounded-lg bg-white/60 dark:bg-white/10 border border-purple-200/40 dark:border-purple-800/40">
+                          <p className="text-sm leading-relaxed whitespace-pre-line italic" data-testid="mood-lyrics">
+                            {moodMusicData[currentMood].lyrics}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Tune Section */}
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Music className="w-3.5 h-3.5 text-blue-600" />
+                          <p className="text-xs font-semibold text-blue-600">Tune</p>
+                        </div>
+                        <div className="p-3 rounded-lg bg-white/60 dark:bg-white/10 border border-blue-200/40 dark:border-blue-800/40">
+                          <p className="text-sm leading-relaxed" data-testid="mood-tune">
+                            {moodMusicData[currentMood].tune}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Chords Section */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Sparkles className="w-3.5 h-3.5 text-pink-600" />
+                          <p className="text-xs font-semibold text-pink-600">Chord Progression</p>
+                        </div>
+                        <div className="p-3 rounded-lg bg-white/60 dark:bg-white/10 border border-pink-200/40 dark:border-pink-800/40">
+                          <p className="text-sm font-mono font-bold" data-testid="mood-chords">
+                            {moodMusicData[currentMood].chords}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Music Analysis Results */}
                 {activeMode === 'music' && musicAnalysis && (
                   <div className="space-y-4">
