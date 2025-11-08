@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Music, Palette, FileText, Sparkles, RefreshCw, Mic, Square, Send, Play, StopCircle, Loader2 } from 'lucide-react';
+import { Music, Palette, FileText, Sparkles, RefreshCw, Mic, Square, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,11 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useMood } from '@/contexts/MoodContext';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import PersonaSelector from './PersonaSelector';
 import { useToast } from '@/hooks/use-toast';
-import { useMutation } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
-import { Progress } from '@/components/ui/progress';
 
 const moodColorPalettes = {
   calm: [
@@ -237,20 +233,19 @@ export default function CreativeCanvas() {
     art: [],
     poetry: []
   });
+  const [youtubeChannels, setYoutubeChannels] = useState<Array<{
+    name: string;
+    handle: string;
+    description: string;
+    genre: string;
+    subscribers: string;
+    why: string;
+  }>>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [transcript, setTranscript] = useState('');
-  const [selectedPersonaId, setSelectedPersonaId] = useState<string>('aurora');
   const recognitionRef = useRef<any>(null);
-
-  // Suno music generation state
-  const [musicTaskId, setMusicTaskId] = useState<string | null>(null);
-  const [musicStatus, setMusicStatus] = useState<'idle' | 'generating' | 'complete' | 'error'>('idle');
-  const [musicTracks, setMusicTracks] = useState<any[]>([]);
-  const [generationProgress, setGenerationProgress] = useState(0);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const currentMood = mood || 'calm';
   const fallbackSuggestions = moodSuggestions[currentMood];
@@ -318,18 +313,52 @@ export default function CreativeCanvas() {
   const fetchSuggestions = async (mode: 'music' | 'art' | 'poetry', customPrompt?: string) => {
     setLoadingSuggestions(true);
     try {
-      const response = await fetch('/api/creative-suggestions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mood: currentMood, mode, customPrompt })
-      });
+      // For music mode, fetch YouTube channels instead
+      if (mode === 'music') {
+        const response = await fetch('/api/suggest-youtube-channels', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            prompt: customPrompt || `${currentMood} music`,
+            mood: currentMood 
+          })
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        setSuggestions(prev => ({ ...prev, [mode]: data.suggestions }));
+        if (response.ok) {
+          const data = await response.json();
+          setYoutubeChannels(data.channels || []);
+        } else {
+          // On error, clear channels and show error toast
+          setYoutubeChannels([]);
+          toast({
+            title: "Failed to load channels",
+            description: "Could not fetch YouTube recommendations. Please try again.",
+            variant: "destructive"
+          });
+        }
+      } else {
+        // For art and poetry, use regular suggestions
+        const response = await fetch('/api/creative-suggestions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mood: currentMood, mode, customPrompt })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setSuggestions(prev => ({ ...prev, [mode]: data.suggestions }));
+        }
       }
     } catch (error) {
       console.error('Error fetching suggestions:', error);
+      if (mode === 'music') {
+        setYoutubeChannels([]);
+        toast({
+          title: "Connection error",
+          description: "Could not connect to the server. Please try again.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setLoadingSuggestions(false);
     }
@@ -349,156 +378,6 @@ export default function CreativeCanvas() {
       return;
     }
     fetchSuggestions(activeMode, userInput);
-  };
-
-  // Poll music status
-  const pollMusicStatus = async (taskId: string) => {
-    try {
-      const response = await fetch(`/api/music-status/${taskId}`);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      
-      if (data.status === 'complete' && data.tracks && data.tracks.length > 0) {
-        setMusicStatus('complete');
-        setMusicTracks(data.tracks);
-        setGenerationProgress(100);
-        
-        // Stop polling
-        if (pollingIntervalRef.current) {
-          clearInterval(pollingIntervalRef.current);
-          pollingIntervalRef.current = null;
-        }
-        
-        toast({
-          title: "Music ready!",
-          description: `${data.tracks.length} track(s) generated successfully`,
-        });
-        
-        // Auto-play first track
-        if (data.tracks[0]?.audio_url && audioRef.current) {
-          audioRef.current.src = data.tracks[0].audio_url;
-          audioRef.current.play().catch(err => {
-            console.error('Autoplay failed:', err);
-            toast({
-              title: "Music ready",
-              description: "Click play to listen to your track",
-            });
-          });
-        }
-      } else if (data.status === 'error') {
-        setMusicStatus('error');
-        setGenerationProgress(0);
-        
-        if (pollingIntervalRef.current) {
-          clearInterval(pollingIntervalRef.current);
-          pollingIntervalRef.current = null;
-        }
-        
-        toast({
-          title: "Generation failed",
-          description: data.error_message || "Failed to generate music",
-          variant: "destructive"
-        });
-      } else {
-        // Still processing, update progress
-        setGenerationProgress(prev => Math.min(prev + 5, 90));
-      }
-    } catch (error: any) {
-      console.error('Polling error:', error);
-      
-      // Surface error to UI
-      setMusicStatus('error');
-      setGenerationProgress(0);
-      
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
-      }
-      
-      toast({
-        title: "Polling failed",
-        description: error.message || "Could not check generation status",
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Cleanup polling on unmount
-  useEffect(() => {
-    return () => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-      }
-    };
-  }, []);
-
-  const handleGenerateVoice = async () => {
-    if (!userInput.trim()) {
-      toast({
-        title: "Input required",
-        description: "Please enter lyrics or music description",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      setMusicStatus('generating');
-      setGenerationProgress(10);
-      setMusicTracks([]);
-      
-      // Stop any playing audio
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = '';
-      }
-
-      const response = await fetch('/api/generate-audio', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: userInput,
-          personaId: selectedPersonaId,
-          compositionType: 'music',
-          mood: currentMood
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to start generation');
-      
-      const data = await response.json();
-      
-      if (data.taskId) {
-        setMusicTaskId(data.taskId);
-        setGenerationProgress(20);
-        
-        toast({
-          title: "🎵 Generating real music!",
-          description: `${data.persona} is creating ${data.musicConfig.mood} music...`,
-          duration: 5000,
-        });
-        
-        // Start polling for status
-        pollingIntervalRef.current = setInterval(() => {
-          pollMusicStatus(data.taskId);
-        }, 5000);
-        
-        // Poll immediately
-        pollMusicStatus(data.taskId);
-      }
-    } catch (error: any) {
-      setMusicStatus('error');
-      setGenerationProgress(0);
-      
-      toast({
-        title: "Generation failed",
-        description: error.message || "Failed to generate music",
-        variant: "destructive"
-      });
-    }
   };
 
   const startVoiceRecording = async () => {
@@ -658,91 +537,6 @@ export default function CreativeCanvas() {
                   data-testid="textarea-creative-input"
                 />
 
-                {/* Persona selection for Music mode */}
-                {activeMode === 'music' && (
-                  <div className="mt-6 p-6 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Music className="w-5 h-5 text-primary" />
-                      <h3 className="font-semibold">Select AI Voice Persona</h3>
-                    </div>
-                    <PersonaSelector
-                      selectedPersonaId={selectedPersonaId}
-                      onSelectPersona={setSelectedPersonaId}
-                    />
-                    <div className="mt-4 space-y-3">
-                      {/* Generation status */}
-                      {musicStatus === 'generating' && (
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-sm">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            <span>Generating real music...</span>
-                          </div>
-                          <Progress value={generationProgress} className="h-2" data-testid="progress-music-generation" />
-                          <p className="text-xs text-muted-foreground">This may take 30-60 seconds</p>
-                        </div>
-                      )}
-                      
-                      {/* Generated tracks */}
-                      {musicStatus === 'complete' && musicTracks.length > 0 && (
-                        <div className="space-y-2">
-                          <Badge variant="outline" className="gap-2">
-                            <div className="w-2 h-2 rounded-full bg-green-500" />
-                            {musicTracks.length} track(s) ready
-                          </Badge>
-                          <div className="space-y-2">
-                            {musicTracks.map((track, idx) => (
-                              <Card key={track.id || idx} className="p-3" data-testid={`track-${idx}`}>
-                                <div className="flex items-center gap-3">
-                                  <Music className="w-5 h-5 text-primary" />
-                                  <div className="flex-1">
-                                    <p className="font-medium text-sm">{track.title}</p>
-                                    {track.duration && (
-                                      <p className="text-xs text-muted-foreground">{Math.round(track.duration)}s</p>
-                                    )}
-                                  </div>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => {
-                                      if (audioRef.current) {
-                                        audioRef.current.src = track.audio_url;
-                                        audioRef.current.play();
-                                      }
-                                    }}
-                                    data-testid={`button-play-${idx}`}
-                                  >
-                                    <Play className="w-3 h-3" />
-                                  </Button>
-                                </div>
-                              </Card>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Generate button */}
-                      <Button
-                        onClick={handleGenerateVoice}
-                        disabled={musicStatus === 'generating' || !userInput.trim()}
-                        className="gap-2 w-full"
-                        data-testid="button-generate-voice"
-                      >
-                        {musicStatus === 'generating' ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Generating...
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-4 h-4" />
-                            Generate Music
-                          </>
-                        )}
-                      </Button>
-                    </div>
-
-                  </div>
-                )}
 
                 {/* Generate from custom prompt button */}
                 <div className="mt-4 flex gap-2">
@@ -782,7 +576,9 @@ export default function CreativeCanvas() {
               <CardContent className="relative space-y-6">
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm font-bold text-foreground">Mood-based suggestions</p>
+                    <p className="text-sm font-bold text-foreground">
+                      {activeMode === 'music' ? 'Recommended YouTube Channels' : 'Mood-based suggestions'}
+                    </p>
                     <Button
                       size="sm"
                       variant="outline"
@@ -795,22 +591,51 @@ export default function CreativeCanvas() {
                     </Button>
                   </div>
                   <div className="space-y-3">
-                    {(suggestions[activeMode].length > 0 ? suggestions[activeMode] : fallbackSuggestions[activeMode]).map((suggestion, idx) => (
-                      <Card
-                        key={idx}
-                        className="p-4 hover-elevate active-elevate-2 cursor-pointer border border-primary/10 transition-all duration-200 hover:border-primary/30 hover:shadow-lg"
-                        onClick={() => {
-                          setUserInput(userInput + (userInput ? '\n' : '') + suggestion);
-                          console.log('Applied suggestion:', suggestion);
-                        }}
-                        data-testid={`suggestion-${idx}`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="mt-0.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                          <p className="text-sm leading-relaxed">{suggestion}</p>
-                        </div>
-                      </Card>
-                    ))}
+                    {activeMode === 'music' && youtubeChannels.length > 0 ? (
+                      youtubeChannels.map((channel, idx) => (
+                        <Card
+                          key={idx}
+                          className="p-4 hover-elevate active-elevate-2 cursor-pointer border border-primary/10 transition-all duration-200 hover:border-primary/30 hover:shadow-lg"
+                          onClick={() => window.open(`https://youtube.com/${channel.handle}`, '_blank')}
+                          data-testid={`youtube-channel-${idx}`}
+                        >
+                          <div className="space-y-2">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <h4 className="font-bold text-sm text-foreground">{channel.name}</h4>
+                                <p className="text-xs text-muted-foreground">{channel.handle}</p>
+                              </div>
+                              <Badge variant="secondary" className="text-xs shrink-0">
+                                {channel.genre}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground leading-relaxed">{channel.description}</p>
+                            <div className="flex items-center justify-between pt-2 border-t border-border/30">
+                              <span className="text-xs text-muted-foreground">{channel.subscribers}</span>
+                              <Music className="w-4 h-4 text-primary" />
+                            </div>
+                            <p className="text-xs text-primary/80 italic">{channel.why}</p>
+                          </div>
+                        </Card>
+                      ))
+                    ) : (
+                      (suggestions[activeMode].length > 0 ? suggestions[activeMode] : fallbackSuggestions[activeMode]).map((suggestion, idx) => (
+                        <Card
+                          key={idx}
+                          className="p-4 hover-elevate active-elevate-2 cursor-pointer border border-primary/10 transition-all duration-200 hover:border-primary/30 hover:shadow-lg"
+                          onClick={() => {
+                            setUserInput(userInput + (userInput ? '\n' : '') + suggestion);
+                            console.log('Applied suggestion:', suggestion);
+                          }}
+                          data-testid={`suggestion-${idx}`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="mt-0.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                            <p className="text-sm leading-relaxed">{suggestion}</p>
+                          </div>
+                        </Card>
+                      ))
+                    )}
                   </div>
                 </div>
 
@@ -825,9 +650,6 @@ export default function CreativeCanvas() {
           </div>
         </div>
       </div>
-
-      {/* Hidden audio player for music playback */}
-      <audio ref={audioRef} data-testid="audio-player" className="hidden" />
     </div>
   );
 }

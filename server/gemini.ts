@@ -344,6 +344,118 @@ Return EXACTLY 3 suggestions as a JSON array of strings.`;
   }
 }
 
+export async function suggestYouTubeChannels(prompt: string, mood: string): Promise<{
+  channels: Array<{
+    name: string;
+    handle: string;
+    description: string;
+    genre: string;
+    subscribers: string;
+    why: string;
+  }>;
+}> {
+  try {
+    const systemPrompt = `You are a music discovery expert. Based on the user's mood and music preferences, suggest 3-5 REAL, EXISTING YouTube music channels that are still active and available.
+
+IMPORTANT: Only suggest channels that:
+- Are real and currently active on YouTube
+- Have substantial content (100K+ subscribers preferred)
+- Match the mood and genre requested
+- Are well-known and easy to find
+
+For each channel provide:
+- name: The channel's display name
+- handle: The @handle (e.g., "@LofiGirl", "@NPRMusic")
+- description: Brief description of their content
+- genre: Primary music genre
+- subscribers: Approximate subscriber count
+- why: Why this channel fits the user's request
+
+Respond with JSON in this format:
+{
+  "channels": [
+    {
+      "name": "Channel Name",
+      "handle": "@channelhandle",
+      "description": "What they offer",
+      "genre": "Genre",
+      "subscribers": "XM subscribers",
+      "why": "Why it matches"
+    }
+  ]
+}`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash-exp",
+      config: {
+        systemInstruction: systemPrompt,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "object",
+          properties: {
+            channels: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  handle: { type: "string" },
+                  description: { type: "string" },
+                  genre: { type: "string" },
+                  subscribers: { type: "string" },
+                  why: { type: "string" }
+                },
+                required: ["name", "handle", "description", "genre", "subscribers", "why"]
+              }
+            }
+          },
+          required: ["channels"]
+        }
+      },
+      contents: `User mood: ${mood}\nMusic preference: ${prompt}\n\nSuggest real YouTube music channels that match.`
+    });
+
+    const rawJson = response.text;
+    if (rawJson) {
+      const data = JSON.parse(rawJson);
+      return data;
+    }
+    
+    throw new Error("Empty response from Gemini");
+  } catch (error) {
+    console.error("Gemini YouTube channel suggestions error:", error);
+    // Fallback with popular channels
+    return {
+      channels: [
+        {
+          name: "Lofi Girl",
+          handle: "@LofiGirl",
+          description: "24/7 lofi hip hop beats for study and relaxation",
+          genre: "Lofi Hip Hop",
+          subscribers: "13M subscribers",
+          why: "Perfect for calm, peaceful moods with continuous ambient music"
+        },
+        {
+          name: "NPR Music",
+          handle: "@nprmusic",
+          description: "Live performances and music discovery from NPR",
+          genre: "Various",
+          subscribers: "2M subscribers",
+          why: "High-quality live sessions across many genres"
+        },
+        {
+          name: "Chill Music Lab",
+          handle: "@ChillMusicLab",
+          description: "Chill music for relaxation and focus",
+          genre: "Chill",
+          subscribers: "1M subscribers",
+          why: "Curated playlists for relaxation and productivity"
+        }
+      ]
+    };
+  }
+}
+
 export async function chatAboutHobby(
   hobbyName: string,
   userQuestion: string,
