@@ -177,23 +177,31 @@ export default function MoodDetectionLanding() {
         )}
 
         {(analysisState === 'analyzing' || analysisState === 'complete') && (
-          <div className="max-w-2xl w-full">
+          <div className="max-w-4xl w-full">
             <Card className="backdrop-blur-md bg-card/90" data-testid="card-mood-analysis">
               <CardContent className="pt-6">
-                <div className="relative w-64 h-64 lg:w-80 lg:h-80 mx-auto mb-6">
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                  {analysisState === 'analyzing' && (
-                    <>
-                      <div className="absolute inset-0 rounded-full border-4 border-primary pulse-glow" />
-                      <div className="absolute inset-0 rounded-full border-4 border-primary/30 animate-ping" />
-                    </>
-                  )}
+                <div className="relative w-full max-w-2xl mx-auto mb-6">
+                  <div className="relative aspect-video rounded-2xl overflow-hidden">
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-cover"
+                    />
+                    {analysisState === 'analyzing' && (
+                      <>
+                        <div className="absolute inset-0 border-4 border-primary pulse-glow rounded-2xl pointer-events-none" />
+                        <div className="absolute inset-0 border-4 border-primary/30 animate-ping rounded-2xl pointer-events-none" />
+                        <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-lg">
+                          <p className="text-white text-sm font-medium flex items-center gap-2">
+                            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                            Analyzing live feed...
+                          </p>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="space-y-4">
