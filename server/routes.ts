@@ -2,9 +2,161 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { analyzeMoodFromText, generateCreativeSuggestions, chatAboutHobby, suggestYouTubeChannels, generateMethodActingDescription, analyzeMusicInput } from "./gemini";
-import { insertJournalEntrySchema } from "@shared/schema";
+import { insertJournalEntrySchema, insertMoodHistorySchema, registerSchema, loginSchema, guardianSchema, onboardingSchema } from "@shared/schema";
+import passport from "passport";
+import { requireAuth } from "./auth";
+import bcrypt from "bcryptjs";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Authentication routes
+  app.post("/api/register", async (req, res) => {
+    try {
+      // Validate input
+      const validation = registerSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ error: "Invalid input", details: validation.error.issues });
+      }
+
+      const { username, password, email, phone } = validation.data;
+      
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({ error: "Username already exists" });
+      }
+
+      // Hash password with bcrypt
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create new user
+      const user = await storage.createUser({
+        username,
+        password: hashedPassword,
+        email: email || null,
+        phone: phone || null,
+        guardianName: null,
+        guardianPhone: null,
+        guardianRelationship: null,
+        personality: null,
+        interests: null,
+      });
+
+      // Auto-login after registration
+      req.login(user, (err) => {
+        if (err) {
+          return res.status(500).json({ error: "Login failed after registration" });
+        }
+        res.json({ 
+          user: {
+            id: user.id,
+            username: user.username,
+            hasCompletedGuardianSetup: user.hasCompletedGuardianSetup,
+            hasCompletedOnboarding: user.hasCompletedOnboarding,
+          }
+        });
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(500).json({ error: "Registration failed" });
+    }
+  });
+
+  app.post("/api/login", passport.authenticate("local"), (req, res) => {
+    const user = req.user as Express.User;
+    res.json({ 
+      user: {
+        id: user.id,
+        username: user.username,
+        hasCompletedGuardianSetup: user.hasCompletedGuardianSetup,
+        hasCompletedOnboarding: user.hasCompletedOnboarding,
+      }
+    });
+  });
+
+  app.post("/api/logout", (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        return res.status(500).json({ error: "Logout failed" });
+      }
+      res.json({ success: true });
+    });
+  });
+
+  app.get("/api/user", requireAuth, (req, res) => {
+    const user = req.user as Express.User;
+    res.json({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      phone: user.phone,
+      guardianName: user.guardianName,
+      guardianPhone: user.guardianPhone,
+      guardianRelationship: user.guardianRelationship,
+      personality: user.personality,
+      interests: user.interests,
+      hasCompletedGuardianSetup: user.hasCompletedGuardianSetup,
+      hasCompletedOnboarding: user.hasCompletedOnboarding,
+    });
+  });
+
+  app.patch("/api/user/guardian", requireAuth, async (req, res) => {
+    try {
+      // Validate input
+      const validation = guardianSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ error: "Invalid input", details: validation.error.issues });
+      }
+
+      const user = req.user as Express.User;
+      const { guardianName, guardianPhone, guardianRelationship } = validation.data;
+
+      const updatedUser = await storage.updateUser(user.id, {
+        guardianName,
+        guardianPhone,
+        guardianRelationship,
+        hasCompletedGuardianSetup: true,
+      });
+
+      if (!updatedUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      res.json({ success: true, user: updatedUser });
+    } catch (error) {
+      console.error("Guardian setup error:", error);
+      res.status(500).json({ error: "Failed to update guardian details" });
+    }
+  });
+
+  app.patch("/api/user/onboarding", requireAuth, async (req, res) => {
+    try {
+      // Validate input
+      const validation = onboardingSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ error: "Invalid input", details: validation.error.issues });
+      }
+
+      const user = req.user as Express.User;
+      const { personality, interests } = validation.data;
+
+      const updatedUser = await storage.updateUser(user.id, {
+        personality,
+        interests,
+        hasCompletedOnboarding: true,
+      });
+
+      if (!updatedUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      res.json({ success: true, user: updatedUser });
+    } catch (error) {
+      console.error("Onboarding error:", error);
+      res.status(500).json({ error: "Failed to update onboarding details" });
+    }
+  });
+
+
   // Multimodal mood detection endpoint (voice + video)
   app.post("/api/analyze-mood", async (req, res) => {
     try {
@@ -26,17 +178,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result = await analyzeMoodFromText(textAnalysis);
 
       // If we have video emotions, fuse them with voice analysis
+      let finalResult = result;
       if (hasVideo && videoEmotions && videoConfidence > 0.3) {
-        const fusedResult = fuseMultimodalMood(result, videoEmotions, voiceConfidence, videoConfidence);
-        return res.json(fusedResult);
+        finalResult = fuseMultimodalMood(result, videoEmotions, voiceConfidence, videoConfidence);
       }
 
-      res.json(result);
+      // Save mood history if user is logged in
+      if (req.isAuthenticated()) {
+        const user = req.user as Express.User;
+        const detectionSource = hasVideo && videoEmotions ? 'multimodal' : 'voice';
+        
+        await storage.createMoodHistory({
+          userId: user.id,
+          mood: finalResult.mood,
+          confidence: finalResult.confidence,
+          detectionSource,
+        });
+
+        // Check for prolonged sadness and trigger guardian alert
+        await checkProlongedSadness(user.id);
+      }
+
+      res.json(finalResult);
     } catch (error) {
       console.error("Error analyzing mood:", error);
       res.status(500).json({ error: "Failed to analyze mood" });
     }
   });
+
+  // Guardian alert system - detect prolonged sadness
+  async function checkProlongedSadness(userId: string) {
+    try {
+      // Get mood history for the last 7 days
+      const allHistory = await storage.getMoodHistory(userId, 100);
+      
+      // Get user to check if they have a guardian
+      const user = await storage.getUser(userId);
+      if (!user || !user.guardianPhone || !user.hasCompletedGuardianSetup) {
+        return; // No guardian setup, skip alert
+      }
+
+      // Filter to only recent moods (last 72 hours)
+      const recentMoods = allHistory.filter(entry => {
+        const hoursSince = (Date.now() - entry.createdAt.getTime()) / (1000 * 60 * 60);
+        return hoursSince <= 72; // Last 3 days
+      });
+
+      // Need minimum samples to make a determination
+      if (recentMoods.length < 5) {
+        return; // Not enough data
+      }
+
+      // Analyze mood patterns for sad/depressive moods
+      const sadMoods = ['sad', 'melancholic', 'lonely', 'overwhelmed'];
+      const recentSadMoods = recentMoods.filter(entry => sadMoods.includes(entry.mood));
+
+      // Calculate percentage from same time window
+      const sadPercentage = recentSadMoods.length / recentMoods.length;
+      
+      // Trigger alert if more than 60% of recent moods are sad
+      if (sadPercentage > 0.6) {
+        console.log(`⚠️ Guardian Alert: User ${user.username} showing prolonged sadness (${Math.round(sadPercentage * 100)}% over last 72h)`);
+        console.log(`   Guardian: ${user.guardianName} (${user.guardianPhone})`);
+        console.log(`   Message: "Your ${user.guardianRelationship || 'friend'} might need a bit of warmth today 💛"`);
+        
+        // TODO: In production, integrate with SMS service (Twilio) to send actual alerts
+        // For now, just log the alert
+      }
+    } catch (error) {
+      console.error("Error checking prolonged sadness:", error);
+    }
+  }
 
   // Helper function to fuse video and voice moods - PRIORITIZE FACIAL + VOICE TONE over transcript
   function fuseMultimodalMood(

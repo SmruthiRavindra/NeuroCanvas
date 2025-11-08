@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import type { Express } from "express";
 import session from "express-session";
 import type { User } from "@shared/schema";
+import bcrypt from "bcryptjs";
 
 // Configure passport local strategy
 passport.use(
@@ -15,8 +16,9 @@ passport.use(
         return done(null, false, { message: "Invalid username or password" });
       }
 
-      // Simple password comparison (in production, use bcrypt)
-      if (user.password !== password) {
+      // Compare password using bcrypt
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
         return done(null, false, { message: "Invalid username or password" });
       }
 
@@ -43,10 +45,16 @@ passport.deserializeUser(async (id: string, done) => {
 });
 
 export function setupAuth(app: Express) {
+  // Ensure SESSION_SECRET is set
+  const sessionSecret = process.env.SESSION_SECRET;
+  if (!sessionSecret) {
+    console.warn("⚠️ WARNING: SESSION_SECRET not set. Using fallback (insecure for production)");
+  }
+
   // Setup session middleware
   app.use(
     session({
-      secret: process.env.SESSION_SECRET || "neurocanvas-secret-key-change-in-production",
+      secret: sessionSecret || "neurocanvas-dev-secret-DO-NOT-USE-IN-PRODUCTION",
       resave: false,
       saveUninitialized: false,
       cookie: {

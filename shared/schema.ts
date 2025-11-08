@@ -39,9 +39,37 @@ export const updateUserSchema = createInsertSchema(users).omit({
   createdAt: true,
 }).partial();
 
+// Auth validation schemas
+export const registerSchema = z.object({
+  username: z.string().min(3).max(50),
+  password: z.string().min(6),
+  email: z.string().email().optional().or(z.literal('')),
+  phone: z.string().min(10).max(20).optional().or(z.literal('')),
+});
+
+export const loginSchema = z.object({
+  username: z.string().min(1),
+  password: z.string().min(1),
+});
+
+export const guardianSchema = z.object({
+  guardianName: z.string().min(1).max(100),
+  guardianPhone: z.string().min(10).max(20),
+  guardianRelationship: z.string().min(1).max(50),
+});
+
+export const onboardingSchema = z.object({
+  personality: z.string().max(500),
+  interests: z.string().max(500),
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpdateUser = z.infer<typeof updateUserSchema>;
 export type User = typeof users.$inferSelect;
+export type RegisterInput = z.infer<typeof registerSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
+export type GuardianInput = z.infer<typeof guardianSchema>;
+export type OnboardingInput = z.infer<typeof onboardingSchema>;
 
 export const journalEntries = pgTable("journal_entries", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
