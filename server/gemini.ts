@@ -9,9 +9,18 @@ export async function analyzeMoodFromText(userInput: string): Promise<{
   reasoning: string;
 }> {
   try {
-    const systemPrompt = `You are an emotion detection AI. Analyze the user's text and determine their emotional state.
-Choose one of these moods: calm, energetic, sad, anxious.
-Provide a confidence score (0-100) and brief reasoning.
+    const systemPrompt = `You are an expert emotion detection AI. Analyze the user's spoken words and/or voice characteristics to determine their emotional state.
+
+Choose one of these moods:
+- calm: peaceful, relaxed, content, steady
+- energetic: excited, enthusiastic, motivated, upbeat
+- sad: down, melancholic, disappointed, low
+- anxious: worried, stressed, nervous, uncertain
+
+Analyze the word choice, tone descriptors, and overall sentiment.
+Provide a confidence score (0-100) based on how clear the emotional indicators are.
+Give brief reasoning explaining your mood choice.
+
 Respond with JSON in this exact format:
 {"mood": "calm|energetic|sad|anxious", "confidence": number, "reasoning": "brief explanation"}`;
 
@@ -30,7 +39,7 @@ Respond with JSON in this exact format:
           required: ["mood", "confidence", "reasoning"]
         }
       },
-      contents: `Analyze this text for emotional tone: "${userInput}"`
+      contents: `Analyze this input for emotional state: "${userInput}"`
     });
 
     const rawJson = response.text;

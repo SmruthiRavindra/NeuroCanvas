@@ -9,6 +9,7 @@ type AnalysisState = 'idle' | 'analyzing';
 export default function MoodDetectionLanding() {
   const [, setLocation] = useLocation();
   const [analysisState, setAnalysisState] = useState<AnalysisState>('idle');
+  const [transcript, setTranscript] = useState<string>('');
   const { setMood, setConfidence } = useMood();
 
   const analyzeVoice = async () => {
@@ -17,6 +18,75 @@ export default function MoodDetectionLanding() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
       setAnalysisState('analyzing');
+      setTranscript('');
+
+      // Promise-based speech recognition wrapper
+      const startRecognition = (): Promise<{ transcript: string; hasTranscript: boolean }> => {
+        return new Promise((resolve, reject) => {
+          const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+          
+          if (!SpeechRecognition) {
+            resolve({ transcript: '', hasTranscript: false });
+            return;
+          }
+
+          const recognition = new SpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = 'en-US';
+
+          let finalTranscript = '';
+          let interimBuffer = '';
+
+          recognition.onresult = (event: any) => {
+            let currentInterim = '';
+
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              const transcript = event.results[i][0].transcript;
+              if (event.results[i].isFinal) {
+                // Accumulate finalized segments
+                finalTranscript += transcript + ' ';
+              } else {
+                currentInterim += transcript;
+              }
+            }
+
+            // Update interim buffer
+            interimBuffer = currentInterim;
+
+            // Display accumulated final + current interim
+            const displayText = finalTranscript + interimBuffer;
+            setTranscript(displayText);
+          };
+
+          recognition.onerror = (event: any) => {
+            console.error('Speech recognition error:', event.error);
+            // Don't reject for non-fatal errors, just log them
+            if (event.error === 'aborted' || event.error === 'network') {
+              reject(new Error(`Speech recognition error: ${event.error}`));
+            }
+          };
+
+          recognition.onend = () => {
+            // Flush any remaining interim text to final transcript
+            if (interimBuffer) {
+              finalTranscript += interimBuffer;
+            }
+            console.log('Speech recognition ended, final transcript:', finalTranscript);
+            resolve({ 
+              transcript: finalTranscript.trim(), 
+              hasTranscript: !!finalTranscript.trim() 
+            });
+          };
+
+          recognition.start();
+
+          // Stop recognition after 10 seconds
+          setTimeout(() => {
+            recognition.stop();
+          }, 10000);
+        });
+      };
 
       // Create audio context for voice analysis
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -74,6 +144,12 @@ export default function MoodDetectionLanding() {
         voiceFeatures.samples++;
       }, 100);
 
+      // Start speech recognition (runs for 10 seconds)
+      const recognitionPromise = startRecognition().catch(err => {
+        console.warn('Recognition failed:', err);
+        return { transcript: '', hasTranscript: false };
+      });
+
       // Analyze for 10 seconds
       setTimeout(async () => {
         clearInterval(analyzeInterval);
@@ -83,69 +159,55 @@ export default function MoodDetectionLanding() {
         stream.getTracks().forEach(track => track.stop());
         audioContext.close();
 
+        // Wait for recognition to complete and get final transcript
+        const { transcript: spokenText, hasTranscript } = await recognitionPromise;
+
         // Calculate averages
         const avgVolume = voiceFeatures.avgVolume / voiceFeatures.samples;
         const avgPitch = voiceFeatures.avgPitch / voiceFeatures.samples;
         const avgEnergy = voiceFeatures.energy / voiceFeatures.samples;
 
-        // Determine mood based on voice characteristics
-        let detectedMood: 'calm' | 'energetic' | 'sad' | 'anxious';
-        let confidence = 75;
-
-        // High pitch + high energy = energetic/excited
-        if (avgPitch > 200 && avgEnergy > 3000) {
-          detectedMood = 'energetic';
-          confidence = 85;
-        }
-        // Low pitch + low volume = sad/dull
-        else if (avgPitch < 150 && avgVolume < 80) {
-          detectedMood = 'sad';
-          confidence = 80;
-        }
-        // High energy + medium-high pitch = anxious
-        else if (avgEnergy > 3500 && avgPitch > 180) {
-          detectedMood = 'anxious';
-          confidence = 82;
-        }
-        // Default to calm for steady, moderate characteristics
-        else {
-          detectedMood = 'calm';
-          confidence = 78;
-        }
-
-        // Create analysis description for Gemini
-        const voiceDescription = `Voice analysis: Average pitch ${avgPitch.toFixed(0)}Hz (${avgPitch > 200 ? 'high-pitched' : avgPitch < 150 ? 'low-pitched' : 'moderate'}), ` +
+        // Prioritize transcript-based analysis if available
+        const analysisText = spokenText || 
+          `Voice characteristics: Average pitch ${avgPitch.toFixed(0)}Hz (${avgPitch > 200 ? 'high-pitched' : avgPitch < 150 ? 'low-pitched' : 'moderate'}), ` +
           `volume ${avgVolume.toFixed(0)} (${avgVolume > 100 ? 'loud' : avgVolume < 80 ? 'quiet' : 'normal'}), ` +
           `energy ${avgEnergy.toFixed(0)} (${avgEnergy > 3500 ? 'very energetic' : avgEnergy < 2000 ? 'low energy' : 'moderate'})`;
 
+        console.log('Sending to Gemini:', analysisText);
+
         try {
-          // Send to Gemini for additional analysis
+          // Send accumulated transcribed words or voice characteristics to Gemini
           const response = await fetch('/api/analyze-mood', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              text: voiceDescription
+              text: analysisText,
+              hasTranscript
             })
           });
 
           if (response.ok) {
             const data = await response.json();
-            // Use Gemini's analysis if confident, otherwise use our detection
-            if (data.confidence > confidence) {
-              setMood(data.mood);
-              setConfidence(data.confidence);
-            } else {
-              setMood(detectedMood);
-              setConfidence(confidence);
-            }
+            setMood(data.mood);
+            setConfidence(data.confidence);
           } else {
-            setMood(detectedMood);
-            setConfidence(confidence);
+            // Fallback based on voice characteristics
+            let fallbackMood: 'calm' | 'energetic' | 'sad' | 'anxious' = 'calm';
+            if (avgPitch > 200 && avgEnergy > 3000) {
+              fallbackMood = 'energetic';
+            } else if (avgPitch < 150 && avgVolume < 80) {
+              fallbackMood = 'sad';
+            } else if (avgEnergy > 3500 && avgPitch > 180) {
+              fallbackMood = 'anxious';
+            }
+            setMood(fallbackMood);
+            setConfidence(70);
           }
         } catch (error) {
           console.error('Mood analysis error:', error);
-          setMood(detectedMood);
-          setConfidence(confidence);
+          // Fallback
+          setMood('calm');
+          setConfidence(70);
         }
         
         setLocation('/canvas');
@@ -222,18 +284,27 @@ export default function MoodDetectionLanding() {
                 
                 {/* Center icon container */}
                 <div className="absolute inset-8 rounded-full bg-gradient-to-br from-purple-900 to-indigo-900 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-2xl">
-                  <Mic className="w-16 h-16 text-pink-400 animate-pulse" />
+                  <Mic className="w-16 h-16 text-pink-400 animate-pulse" data-testid="icon-analyzing" />
                 </div>
               </div>
               
               <div className="space-y-4">
                 <Loader2 className="w-10 h-10 text-pink-400 animate-spin mx-auto" />
                 <p className="text-white text-3xl font-bold">
-                  Analyzing your voice...
+                  Listening to your words...
                 </p>
-                <p className="text-purple-200 text-lg font-light">
-                  Processing tone, pitch, and emotional patterns
-                </p>
+                {transcript ? (
+                  <div className="mt-6 p-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 max-w-2xl mx-auto">
+                    <p className="text-sm text-purple-300 mb-2 font-semibold">What you said:</p>
+                    <p className="text-white text-lg font-light leading-relaxed" data-testid="text-transcript">
+                      "{transcript}"
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-purple-200 text-lg font-light">
+                    Speak naturally - we're analyzing your words and tone
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -279,7 +350,7 @@ export default function MoodDetectionLanding() {
             You'll be prompted to allow microphone access.
           </p>
           <p className="text-purple-300 text-sm font-light">
-            Speak naturally for 10 seconds - our AI analyzes your voice pitch, tone, and energy
+            Speak naturally for 10 seconds - our AI analyzes the words you say and your voice tone
           </p>
         </div>
         </div>
