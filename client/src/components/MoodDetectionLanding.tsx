@@ -14,39 +14,142 @@ export default function MoodDetectionLanding() {
   const analyzeVoice = async () => {
     try {
       // Request microphone access
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
       setAnalysisState('analyzing');
+
+      // Create audio context for voice analysis
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const analyser = audioContext.createAnalyser();
+      const microphone = audioContext.createMediaStreamSource(stream);
       
-      // Analyze for 15 seconds
+      analyser.fftSize = 2048;
+      microphone.connect(analyser);
+
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      
+      // Record audio for analysis
+      const mediaRecorder = new MediaRecorder(stream);
+      const audioChunks: Blob[] = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
+      };
+
+      mediaRecorder.start();
+
+      // Analyze voice characteristics in real-time
+      const voiceFeatures = {
+        avgPitch: 0,
+        avgVolume: 0,
+        energy: 0,
+        pitchVariation: 0,
+        samples: 0
+      };
+
+      const analyzeInterval = setInterval(() => {
+        analyser.getByteFrequencyData(dataArray);
+        
+        // Calculate average volume (amplitude)
+        const volume = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
+        
+        // Calculate dominant frequency (pitch approximation)
+        let maxValue = 0;
+        let maxIndex = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          if (dataArray[i] > maxValue) {
+            maxValue = dataArray[i];
+            maxIndex = i;
+          }
+        }
+        const pitch = maxIndex * audioContext.sampleRate / analyser.fftSize;
+        
+        // Calculate energy (sum of squares)
+        const energy = dataArray.reduce((sum, value) => sum + value * value, 0) / bufferLength;
+        
+        voiceFeatures.avgVolume += volume;
+        voiceFeatures.avgPitch += pitch;
+        voiceFeatures.energy += energy;
+        voiceFeatures.samples++;
+      }, 100);
+
+      // Analyze for 10 seconds
       setTimeout(async () => {
+        clearInterval(analyzeInterval);
+        mediaRecorder.stop();
+        
+        // Stop all tracks
+        stream.getTracks().forEach(track => track.stop());
+        audioContext.close();
+
+        // Calculate averages
+        const avgVolume = voiceFeatures.avgVolume / voiceFeatures.samples;
+        const avgPitch = voiceFeatures.avgPitch / voiceFeatures.samples;
+        const avgEnergy = voiceFeatures.energy / voiceFeatures.samples;
+
+        // Determine mood based on voice characteristics
+        let detectedMood: 'calm' | 'energetic' | 'sad' | 'anxious';
+        let confidence = 75;
+
+        // High pitch + high energy = energetic/excited
+        if (avgPitch > 200 && avgEnergy > 3000) {
+          detectedMood = 'energetic';
+          confidence = 85;
+        }
+        // Low pitch + low volume = sad/dull
+        else if (avgPitch < 150 && avgVolume < 80) {
+          detectedMood = 'sad';
+          confidence = 80;
+        }
+        // High energy + medium-high pitch = anxious
+        else if (avgEnergy > 3500 && avgPitch > 180) {
+          detectedMood = 'anxious';
+          confidence = 82;
+        }
+        // Default to calm for steady, moderate characteristics
+        else {
+          detectedMood = 'calm';
+          confidence = 78;
+        }
+
+        // Create analysis description for Gemini
+        const voiceDescription = `Voice analysis: Average pitch ${avgPitch.toFixed(0)}Hz (${avgPitch > 200 ? 'high-pitched' : avgPitch < 150 ? 'low-pitched' : 'moderate'}), ` +
+          `volume ${avgVolume.toFixed(0)} (${avgVolume > 100 ? 'loud' : avgVolume < 80 ? 'quiet' : 'normal'}), ` +
+          `energy ${avgEnergy.toFixed(0)} (${avgEnergy > 3500 ? 'very energetic' : avgEnergy < 2000 ? 'low energy' : 'moderate'})`;
+
         try {
+          // Send to Gemini for additional analysis
           const response = await fetch('/api/analyze-mood', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              text: 'User is speaking with calm, steady voice tone.'
+              text: voiceDescription
             })
           });
 
           if (response.ok) {
             const data = await response.json();
-            setMood(data.mood);
-            setConfidence(data.confidence);
+            // Use Gemini's analysis if confident, otherwise use our detection
+            if (data.confidence > confidence) {
+              setMood(data.mood);
+              setConfidence(data.confidence);
+            } else {
+              setMood(detectedMood);
+              setConfidence(confidence);
+            }
           } else {
-            const moods: Array<'calm' | 'energetic' | 'sad' | 'anxious'> = ['calm', 'energetic', 'sad', 'anxious'];
-            setMood(moods[Math.floor(Math.random() * moods.length)]);
-            setConfidence(85);
+            setMood(detectedMood);
+            setConfidence(confidence);
           }
         } catch (error) {
           console.error('Mood analysis error:', error);
-          const moods: Array<'calm' | 'energetic' | 'sad' | 'anxious'> = ['calm', 'energetic', 'sad', 'anxious'];
-          setMood(moods[Math.floor(Math.random() * moods.length)]);
-          setConfidence(80);
+          setMood(detectedMood);
+          setConfidence(confidence);
         }
         
         setLocation('/canvas');
-      }, 15000);
+      }, 10000);
     } catch (error) {
       console.error('Microphone access denied:', error);
       alert('Microphone access is required for voice analysis. Please allow microphone access and try again.');
@@ -131,7 +234,7 @@ export default function MoodDetectionLanding() {
 
         {/* Info Text */}
         <p className="text-center text-purple-300 text-sm mt-6">
-          You'll be prompted to allow microphone access. Speak for about 15 seconds for accurate results.
+          You'll be prompted to allow microphone access. Speak naturally for 10 seconds - our AI will analyze your voice pitch, tone, and energy to detect your mood.
         </p>
       </div>
     </div>
