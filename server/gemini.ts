@@ -722,75 +722,208 @@ Return JSON in this exact format:
 
   } catch (error) {
     console.error("Gemini music input analysis error:", error);
+    console.log("Using local fallback for music analysis");
     
-    // Intelligent local fallback
-    const looksLikeLyrics = userInput.split(/\s+/).length > 5 && 
-                            !(/\b(bpm|tempo|chord|melody|beat|rhythm|key|scale|instrument)\b/i.test(userInput));
-    
-    if (looksLikeLyrics) {
-      // Input appears to be lyrics - suggest tune/chords
-      return {
-        inputType: 'lyrics',
-        complementarySuggestions: {
-          type: 'Tune/Chord Suggestions',
-          suggestions: [
-            `🎹 Tempo: 90 BPM | Chords: Am–F–C–G | Soft piano with gentle strings`,
-            `🎸 Tempo: 85 BPM | Chords: Em–C–G–D | Acoustic guitar with light percussion`,
-            `🎵 Tempo: 95 BPM | Chords: Dm–Bb–F–C | Indie folk feel with warm vocals`
-          ]
-        },
-        youtubeChannels: [
-          {
-            name: "Lofi Girl",
-            handle: "@LofiGirl",
-            description: "Relaxing beats for creative work",
-            genre: "Lofi Hip Hop",
-            subscribers: "13M subscribers",
-            why: `Perfect for ${mood} mood with calming instrumentals`
-          },
-          {
-            name: "Chill Music Lab",
-            handle: "@ChillMusicLab",
-            description: "Ambient and chill music collections",
-            genre: "Chill/Ambient",
-            subscribers: "1M subscribers",
-            why: "Great for mood-based music discovery"
-          }
-        ]
-      };
-    } else {
-      // Input appears to be tune - suggest lyrics
-      return {
-        inputType: 'tune',
-        complementarySuggestions: {
-          type: 'Lyric Suggestions',
-          suggestions: [
-            `🎤 "Wandering through thoughts, finding my way / Each step uncertain, yet here I'll stay / In the quiet moments, I hear my soul"`,
-            `🎤 "Dancing with shadows, chasing the light / Every emotion feels just right / The melody carries me through the night"`,
-            `🎤 "In this space between the notes / Where every feeling floats / I find the words I couldn't say"`
-          ]
-        },
-        youtubeChannels: [
-          {
-            name: "NPR Music",
-            handle: "@nprmusic",
-            description: "Live performances and music discovery",
-            genre: "Various",
-            subscribers: "2M subscribers",
-            why: "High-quality performances matching your musical style"
-          },
-          {
-            name: "COLORS",
-            handle: "@COLORSxSTUDIOS",
-            description: "Unique live music performances",
-            genre: "Various",
-            subscribers: "5M subscribers",
-            why: "Diverse artists performing in your preferred style"
-          }
-        ]
-      };
-    }
+    // Robust local fallback with mood-aware suggestions
+    return analyzeMusicallyLocally(userInput, mood);
   }
+}
+
+// Local music analysis when Gemini API is unavailable
+function analyzeMusicallyLocally(
+  userInput: string,
+  mood: string
+): {
+  inputType: 'lyrics' | 'tune';
+  complementarySuggestions: {
+    type: string;
+    suggestions: string[];
+  };
+  youtubeChannels: Array<{
+    name: string;
+    handle: string;
+    description: string;
+    genre: string;
+    subscribers: string;
+    why: string;
+  }>;
+} {
+  const text = userInput.toLowerCase();
+  
+  // Enhanced detection logic
+  const musicalTerms = ['bpm', 'tempo', 'chord', 'chords', 'melody', 'beat', 'rhythm', 'key', 'scale', 'instrument', 'progression', 'notes', 'acoustic', 'electric', 'synthesizer', 'drums', 'bass', 'major', 'minor'];
+  const hasMusicalTerms = musicalTerms.some(term => text.includes(term));
+  const wordCount = userInput.split(/\s+/).length;
+  
+  // If it has musical terminology or is very short, it's likely a tune description
+  const looksLikeTune = hasMusicalTerms || wordCount < 5;
+  
+  if (looksLikeTune) {
+    // Input appears to be tune - suggest lyrics
+    const moodBasedLyrics = getMoodBasedLyrics(mood);
+    return {
+      inputType: 'tune',
+      complementarySuggestions: {
+        type: 'Lyric Suggestions',
+        suggestions: moodBasedLyrics
+      },
+      youtubeChannels: getMoodBasedChannels(mood, 'tune')
+    };
+  } else {
+    // Input appears to be lyrics - suggest tune/chords
+    const moodBasedTunes = getMoodBasedTunes(mood);
+    return {
+      inputType: 'lyrics',
+      complementarySuggestions: {
+        type: 'Tune/Chord Suggestions',
+        suggestions: moodBasedTunes
+      },
+      youtubeChannels: getMoodBasedChannels(mood, 'lyrics')
+    };
+  }
+}
+
+// Get mood-appropriate tune/chord suggestions
+function getMoodBasedTunes(mood: string): string[] {
+  const moodTunes: Record<string, string[]> = {
+    happy: [
+      `🎹 Tempo: 120 BPM | Chords: C–G–Am–F | Bright piano with uplifting melody`,
+      `🎸 Tempo: 125 BPM | Chords: D–A–Bm–G | Cheerful acoustic strumming`,
+      `🎵 Tempo: 115 BPM | Chords: G–D–Em–C | Pop feel with major progressions`
+    ],
+    energetic: [
+      `🎹 Tempo: 140 BPM | Chords: Em–C–G–D | Fast-paced with driving rhythm`,
+      `🎸 Tempo: 135 BPM | Chords: Am–F–C–G | Electric guitar with power chords`,
+      `🎵 Tempo: 145 BPM | Chords: Dm–Bb–F–C | High-energy dance beat`
+    ],
+    calm: [
+      `🎹 Tempo: 75 BPM | Chords: Am–F–C–G | Soft piano with gentle strings`,
+      `🎸 Tempo: 70 BPM | Chords: Em–C–G–D | Fingerpicked acoustic`,
+      `🎵 Tempo: 80 BPM | Chords: Dm–Bb–F–C | Ambient pads with subtle melody`
+    ],
+    sad: [
+      `🎹 Tempo: 65 BPM | Chords: Am–F–C–Em | Minor key piano ballad`,
+      `🎸 Tempo: 60 BPM | Chords: Dm–Bb–F–Am | Melancholic acoustic`,
+      `🎵 Tempo: 70 BPM | Chords: Em–C–G–Am | Slow, emotional progression`
+    ]
+  };
+  
+  return moodTunes[mood] || moodTunes['calm'];
+}
+
+// Get mood-appropriate lyric suggestions
+function getMoodBasedLyrics(mood: string): string[] {
+  const moodLyrics: Record<string, string[]> = {
+    happy: [
+      `🎤 "Sunshine breaking through the clouds today / Every moment feels like a new way / Dancing freely, nothing in my way / This is where I choose to stay"`,
+      `🎤 "Laughter echoes in the summer air / No more worries, no more cares / Living fully, hearts laid bare / Joy is everywhere"`,
+      `🎤 "Colors brighter than I've ever seen / Life's a canvas, painting dreams / Every heartbeat in between / Shows me what it means"`
+    ],
+    energetic: [
+      `🎤 "Racing forward, can't slow down / Feel the power all around / Breaking barriers, breaking ground / This is where I'm found"`,
+      `🎤 "Lightning strikes inside my veins / Nothing holding back the flames / Push beyond the old constraints / Write my name in change"`,
+      `🎤 "Thunder rolling in my chest / Never settling for less / Taking on this quest / Giving it my best"`
+    ],
+    calm: [
+      `🎤 "Wandering through thoughts, finding my way / Each step certain, in the light of day / Peaceful moments, here to stay / Breathing in this gentle sway"`,
+      `🎤 "Stillness wraps around my soul / Finally feeling whole / Let the quiet take control / In this peaceful role"`,
+      `🎤 "Soft winds whisper through the trees / Finding comfort in the breeze / All my worries start to ease / Moments just like these"`
+    ],
+    sad: [
+      `🎤 "Empty spaces where you used to be / Shadows of what we could see / Missing all that used to be / Lost in memory"`,
+      `🎤 "Rain falls softly on the glass / Watching moments as they pass / Nothing good could ever last / Holding to the past"`,
+      `🎤 "Silent tears that no one sees / Fallen to my knees / Searching for some ease / In these broken memories"`
+    ]
+  };
+  
+  return moodLyrics[mood] || moodLyrics['calm'];
+}
+
+// Get mood-appropriate YouTube channel suggestions
+function getMoodBasedChannels(mood: string, inputType: 'lyrics' | 'tune'): Array<{
+  name: string;
+  handle: string;
+  description: string;
+  genre: string;
+  subscribers: string;
+  why: string;
+}> {
+  const moodChannels: Record<string, any[]> = {
+    happy: [
+      {
+        name: "Vevo",
+        handle: "@vevo",
+        description: "Official music videos from top artists",
+        genre: "Pop/Various",
+        subscribers: "30M subscribers",
+        why: `Uplifting ${mood} music from popular artists`
+      },
+      {
+        name: "Selected.",
+        handle: "@selected",
+        description: "Upbeat indie and electronic music",
+        genre: "Indie/Electronic",
+        subscribers: "3M subscribers",
+        why: "Feel-good tracks matching your cheerful vibe"
+      }
+    ],
+    energetic: [
+      {
+        name: "Monstercat",
+        handle: "@Monstercat",
+        description: "Electronic music label with high-energy tracks",
+        genre: "EDM/Electronic",
+        subscribers: "13M subscribers",
+        why: `High-energy ${mood} beats and bass`
+      },
+      {
+        name: "Proximity",
+        handle: "@Proximity",
+        description: "Electronic dance music channel",
+        genre: "EDM",
+        subscribers: "7M subscribers",
+        why: "Dynamic tracks for your energetic mood"
+      }
+    ],
+    calm: [
+      {
+        name: "Lofi Girl",
+        handle: "@LofiGirl",
+        description: "24/7 lofi hip hop beats",
+        genre: "Lofi Hip Hop",
+        subscribers: "13M subscribers",
+        why: `Perfect for ${mood} relaxation and focus`
+      },
+      {
+        name: "Chill Music Lab",
+        handle: "@ChillMusicLab",
+        description: "Chill music for relaxation",
+        genre: "Chill/Ambient",
+        subscribers: "1M subscribers",
+        why: "Peaceful vibes for your calm state"
+      }
+    ],
+    sad: [
+      {
+        name: "Sad Songs",
+        handle: "@SadSongsMusic",
+        description: "Emotional and melancholic music",
+        genre: "Sad/Emotional",
+        subscribers: "500K subscribers",
+        why: `Songs that understand your ${mood} feelings`
+      },
+      {
+        name: "Indie Folk Central",
+        handle: "@indiefolkcentral",
+        description: "Melancholic indie folk music",
+        genre: "Indie Folk",
+        subscribers: "800K subscribers",
+        why: "Reflective music for introspective moments"
+      }
+    ]
+  };
+  
+  return moodChannels[mood] || moodChannels['calm'];
 }
 
 export { lyriaClient };
