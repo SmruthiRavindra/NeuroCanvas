@@ -249,6 +249,21 @@ export default function CreativeCanvas() {
   const [methodActingChat, setMethodActingChat] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
   const [methodActingInput, setMethodActingInput] = useState('');
   const [loadingMethodActing, setLoadingMethodActing] = useState(false);
+  const [musicAnalysis, setMusicAnalysis] = useState<{
+    inputType: 'lyrics' | 'tune';
+    complementarySuggestions: {
+      type: string;
+      suggestions: string[];
+    };
+    youtubeChannels: Array<{
+      name: string;
+      handle: string;
+      description: string;
+      genre: string;
+      subscribers: string;
+      why: string;
+    }>;
+  } | null>(null);
 
   const currentMood = mood || 'calm';
   const fallbackSuggestions = moodSuggestions[currentMood];
@@ -371,6 +386,53 @@ export default function CreativeCanvas() {
     fetchSuggestions(activeMode);
   };
 
+  const analyzeMusicInput = async () => {
+    if (!userInput.trim()) {
+      toast({
+        title: "Input required",
+        description: "Please enter lyrics or a tune description",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoadingSuggestions(true);
+    try {
+      const response = await fetch('/api/analyze-music', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userInput: userInput.trim(),
+          mood: currentMood 
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMusicAnalysis(data);
+        toast({
+          title: `${data.inputType === 'lyrics' ? 'Lyrics' : 'Tune'} detected!`,
+          description: `Generating complementary ${data.inputType === 'lyrics' ? 'tune suggestions' : 'lyrics'} for you.`,
+        });
+      } else {
+        toast({
+          title: "Analysis failed",
+          description: "Could not analyze your music input. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error analyzing music:', error);
+      toast({
+        title: "Connection error",
+        description: "Could not connect to the server. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
   const generateFromCustomPrompt = () => {
     if (!userInput.trim()) {
       toast({
@@ -380,7 +442,13 @@ export default function CreativeCanvas() {
       });
       return;
     }
-    fetchSuggestions(activeMode, userInput);
+
+    // For music mode, use intelligent analysis
+    if (activeMode === 'music') {
+      analyzeMusicInput();
+    } else {
+      fetchSuggestions(activeMode, userInput);
+    }
   };
 
   const startVoiceRecording = async () => {
@@ -658,7 +726,11 @@ export default function CreativeCanvas() {
                     </div>
 
                     <Textarea
-                      placeholder={`Enter your ${activeMode} idea or use AI suggestions...`}
+                      placeholder={
+                        activeMode === 'music' 
+                          ? `Enter lyrics (e.g., "Walking through the rain...") or tune description (e.g., "120 BPM, Am-F-C-G chord progression...")` 
+                          : `Enter your ${activeMode} idea or use AI suggestions...`
+                      }
                       className="min-h-[300px] text-base resize-none"
                       value={userInput}
                       onChange={(e) => setUserInput(e.target.value)}
@@ -675,7 +747,7 @@ export default function CreativeCanvas() {
                         data-testid="button-generate-custom"
                       >
                         <Send className="w-4 h-4" />
-                        {loadingSuggestions ? 'Generating...' : 'Get AI Suggestions'}
+                        {loadingSuggestions ? 'Analyzing...' : (activeMode === 'music' ? 'Analyze & Suggest' : 'Get AI Suggestions')}
                       </Button>
                     </div>
                   </>
@@ -703,10 +775,43 @@ export default function CreativeCanvas() {
                 </div>
               </CardHeader>
               <CardContent className="relative space-y-6">
+                {/* Music Analysis Results */}
+                {activeMode === 'music' && musicAnalysis && (
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/20 dark:to-pink-950/20 border border-purple-200/50 dark:border-purple-800/50">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Sparkles className="w-4 h-4 text-purple-600" />
+                        <p className="text-sm font-bold">
+                          {musicAnalysis.inputType === 'lyrics' ? '🎤 Lyrics Detected' : '🎵 Tune Detected'}
+                        </p>
+                        <Badge variant="outline" className="text-xs capitalize">
+                          {currentMood}
+                        </Badge>
+                      </div>
+                      
+                      <p className="text-xs text-muted-foreground mb-4">
+                        {musicAnalysis.complementarySuggestions.type}
+                      </p>
+                      
+                      <div className="space-y-2">
+                        {musicAnalysis.complementarySuggestions.suggestions.map((suggestion, idx) => (
+                          <div
+                            key={idx}
+                            className="p-3 rounded-lg bg-white/50 dark:bg-white/5 border border-purple-200/30 dark:border-purple-800/30"
+                            data-testid={`music-suggestion-${idx}`}
+                          >
+                            <p className="text-sm leading-relaxed">{suggestion}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-sm font-bold text-foreground">
-                      {activeMode === 'music' ? 'Recommended YouTube Channels' : 'Mood-based suggestions'}
+                      {activeMode === 'music' ? (musicAnalysis ? 'Mood-Matched YouTube Channels' : 'Recommended YouTube Channels') : 'Mood-based suggestions'}
                     </p>
                     <Button
                       size="sm"
@@ -720,8 +825,8 @@ export default function CreativeCanvas() {
                     </Button>
                   </div>
                   <div className="space-y-3">
-                    {activeMode === 'music' && youtubeChannels.length > 0 ? (
-                      youtubeChannels.map((channel, idx) => (
+                    {activeMode === 'music' && (musicAnalysis?.youtubeChannels || youtubeChannels).length > 0 ? (
+                      (musicAnalysis?.youtubeChannels || youtubeChannels).map((channel, idx) => (
                         <Card
                           key={idx}
                           className="p-4 hover-elevate active-elevate-2 cursor-pointer border border-primary/10 transition-all duration-200 hover:border-primary/30 hover:shadow-lg"
