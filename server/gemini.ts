@@ -1,7 +1,15 @@
 import { GoogleGenAI } from "@google/genai";
 
 // Integration reference: blueprint:javascript_gemini
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const ai = new GoogleGenAI({ 
+  apiKey: process.env.GEMINI_API_KEY || "",
+});
+
+// Lyria RealTime client for music generation
+const lyriaClient = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY || "",
+  apiVersion: "v1alpha"
+});
 
 export async function analyzeMoodFromText(userInput: string): Promise<{
   mood: 'calm' | 'energetic' | 'sad' | 'anxious' | 'happy' | 'stressed' | 'peaceful' | 'angry' | 'confused' | 'excited' | 'melancholic' | 'confident' | 'blissful' | 'lonely' | 'hopeful' | 'overwhelmed';
@@ -360,3 +368,69 @@ Keep responses concise (2-3 sentences). Focus on practical advice for beginners.
     return "That's a great question! I'd recommend checking out the YouTube tutorials for detailed guidance on getting started.";
   }
 }
+
+// Generate music prompt configuration from persona and user input
+export function generateLyriaMusicPrompts(
+  personaGender: 'male' | 'female',
+  personaStyle: string,
+  musicGenres: string[],
+  userInput: string,
+  mood: string
+): { prompts: Array<{ text: string, weight: number }>, config: { bpm: number, temperature: number } } {
+  
+  // Detect if user provided lyrics or tune description
+  const looksLikeLyrics = userInput.split(/\s+/).length > 5 && 
+                          !(/\b(bpm|tempo|chord|melody|beat|rhythm|key|scale)\b/i.test(userInput));
+  
+  const prompts: Array<{ text: string, weight: number }> = [];
+  
+  // Base genre from persona
+  if (musicGenres.length > 0) {
+    prompts.push({ text: musicGenres[0], weight: 0.8 });
+  }
+  
+  // Mood-based characteristics
+  const moodPrompts: Record<string, string> = {
+    happy: "Upbeat, Bright Tones, Danceable",
+    energetic: "Fast Beats, Dynamic, High Energy",
+    calm: "Ambient, Smooth, Peaceful",
+    sad: "Melancholic, Slow, Emotional",
+    anxious: "Tense, Unsettling, Dissonant",
+    peaceful: "Ethereal, Calm, Gentle",
+    excited: "Energetic, Fast-paced, Uplifting",
+    angry: "Aggressive, Heavy, Distorted",
+    confident: "Bold, Strong, Powerful",
+    hopeful: "Uplifting, Bright, Optimistic"
+  };
+  
+  if (moodPrompts[mood]) {
+    prompts.push({ text: moodPrompts[mood], weight: 1.0 });
+  }
+  
+  // BPM based on mood
+  const moodBPM: Record<string, number> = {
+    energetic: 140,
+    excited: 130,
+    happy: 120,
+    confident: 115,
+    hopeful: 110,
+    calm: 85,
+    peaceful: 75,
+    sad: 70,
+    melancholic: 65,
+    anxious: 95,
+    stressed: 100
+  };
+  
+  const bpm = moodBPM[mood] || 100;
+  
+  return {
+    prompts,
+    config: {
+      bpm,
+      temperature: 1.0
+    }
+  };
+}
+
+export { lyriaClient };

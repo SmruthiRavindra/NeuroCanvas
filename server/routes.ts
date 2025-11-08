@@ -131,10 +131,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Voice synthesis endpoint using Web Speech API
+  // Music generation endpoint using Lyria RealTime
   app.post("/api/generate-audio", async (req, res) => {
     try {
-      const { prompt, personaId, compositionType } = req.body;
+      const { prompt, personaId, mood } = req.body;
       if (!prompt || !personaId) {
         return res.status(400).json({ error: "Prompt and personaId are required" });
       }
@@ -145,27 +145,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Persona not found" });
       }
 
-      // Map persona to voice parameters based on gender and style
-      const voiceConfig = {
-        pitch: persona.gender === 'female' ? 1.2 : 0.9,
-        rate: persona.voiceStyle.toLowerCase().includes('energetic') || persona.voiceStyle.toLowerCase().includes('dynamic') ? 1.15 : 
-              persona.voiceStyle.toLowerCase().includes('smooth') || persona.voiceStyle.toLowerCase().includes('gentle') ? 0.95 : 1.0,
-        volume: 1.0,
-        voiceName: persona.gender === 'female' ? 'Google UK English Female' : 'Google UK English Male',
-      };
+      // Generate music prompts and configuration based on persona and mood
+      const { generateLyriaMusicPrompts } = await import('./gemini');
+      const musicConfig = generateLyriaMusicPrompts(
+        persona.gender,
+        persona.voiceStyle,
+        persona.musicGenres,
+        prompt,
+        mood || 'happy'
+      );
 
+      // Return configuration for client-side Lyria connection
+      // Note: Full Lyria RealTime integration requires WebSocket on client
       res.json({
         success: true,
-        message: `🎵 Voice synthesis ready for ${persona.displayName}!`,
+        message: `🎵 Generating music with ${persona.displayName}!`,
         persona: persona.displayName,
         prompt,
-        compositionType,
-        voiceConfig,
+        musicConfig: {
+          prompts: musicConfig.prompts,
+          bpm: musicConfig.config.bpm,
+          temperature: musicConfig.config.temperature,
+          genres: persona.musicGenres,
+          mood: mood || 'happy'
+        },
         personaColor: persona.colorTheme,
+        // Indicate that this uses Lyria RealTime
+        usesLyria: true
       });
     } catch (error) {
-      console.error("Error generating audio:", error);
-      res.status(500).json({ error: "Failed to generate audio" });
+      console.error("Error generating music:", error);
+      res.status(500).json({ error: "Failed to generate music" });
     }
   });
 
@@ -186,5 +196,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // Set up Lyria RealTime WebSocket proxy
+  const { setupLyriaWebSocket } = await import('./lyriaProxy');
+  setupLyriaWebSocket(httpServer);
+  
   return httpServer;
 }
