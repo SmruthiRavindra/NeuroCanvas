@@ -906,7 +906,7 @@ function getMoodBasedChannels(mood: string, inputType: 'lyrics' | 'tune'): Array
         description: "Official music videos from top artists",
         genre: "Pop/Various",
         subscribers: "30M subscribers",
-        why: `Uplifting ${mood} music from popular artists`
+        why: "Uplifting happy music from popular artists"
       },
       {
         name: "Selected.",
@@ -924,7 +924,7 @@ function getMoodBasedChannels(mood: string, inputType: 'lyrics' | 'tune'): Array
         description: "Electronic music label with high-energy tracks",
         genre: "EDM/Electronic",
         subscribers: "13M subscribers",
-        why: `High-energy ${mood} beats and bass`
+        why: "High-energy beats and bass to match your energy"
       },
       {
         name: "Proximity",
@@ -942,7 +942,7 @@ function getMoodBasedChannels(mood: string, inputType: 'lyrics' | 'tune'): Array
         description: "24/7 lofi hip hop beats",
         genre: "Lofi Hip Hop",
         subscribers: "13M subscribers",
-        why: `Perfect for ${mood} relaxation and focus`
+        why: "Perfect for calm relaxation and focus"
       },
       {
         name: "Chill Music Lab",
@@ -960,7 +960,7 @@ function getMoodBasedChannels(mood: string, inputType: 'lyrics' | 'tune'): Array
         description: "Emotional and melancholic music",
         genre: "Sad/Emotional",
         subscribers: "500K subscribers",
-        why: `Songs that understand your ${mood} feelings`
+        why: "Songs that understand your sad feelings"
       },
       {
         name: "Indie Folk Central",
@@ -969,6 +969,222 @@ function getMoodBasedChannels(mood: string, inputType: 'lyrics' | 'tune'): Array
         genre: "Indie Folk",
         subscribers: "800K subscribers",
         why: "Reflective music for introspective moments"
+      }
+    ],
+    anxious: [
+      {
+        name: "Meditation Relax Music",
+        handle: "@MeditationRelaxMusic",
+        description: "Calming meditation and relaxation music",
+        genre: "Meditation/Ambient",
+        subscribers: "10M subscribers",
+        why: "Soothing sounds to ease anxiety and tension"
+      },
+      {
+        name: "Yellow Brick Cinema",
+        handle: "@YellowBrickCinema",
+        description: "Relaxing music for stress relief",
+        genre: "Relaxation/Healing",
+        subscribers: "6M subscribers",
+        why: "Gentle music to calm anxious thoughts"
+      }
+    ],
+    stressed: [
+      {
+        name: "Soothing Relaxation",
+        handle: "@SoothingRelaxation",
+        description: "Beautiful relaxing music for stress relief",
+        genre: "Relaxation/Piano",
+        subscribers: "8M subscribers",
+        why: "Stress-relieving music to help you unwind"
+      },
+      {
+        name: "Peaceful Mind",
+        handle: "@peacefulmindmusic",
+        description: "Peaceful music for meditation and relaxation",
+        genre: "Meditation",
+        subscribers: "2M subscribers",
+        why: "Calming tracks to reduce stress levels"
+      }
+    ],
+    peaceful: [
+      {
+        name: "Meditation Mind",
+        handle: "@MeditationMindfulness",
+        description: "Peaceful meditation music and nature sounds",
+        genre: "Meditation/Nature",
+        subscribers: "4M subscribers",
+        why: "Tranquil soundscapes for peaceful moments"
+      },
+      {
+        name: "Nature Sounds",
+        handle: "@NatureSoundsRelaxation",
+        description: "Pure nature sounds and ambient music",
+        genre: "Nature/Ambient",
+        subscribers: "3M subscribers",
+        why: "Natural peaceful sounds for deep relaxation"
+      }
+    ],
+    angry: [
+      {
+        name: "Rock Sound",
+        handle: "@rocksound",
+        description: "Rock and alternative music channel",
+        genre: "Rock/Metal",
+        subscribers: "2M subscribers",
+        why: "Powerful rock music to channel your anger"
+      },
+      {
+        name: "Metal Hammer",
+        handle: "@MetalHammer",
+        description: "Heavy metal and hard rock videos",
+        genre: "Metal/Hard Rock",
+        subscribers: "1.5M subscribers",
+        why: "Intense music that matches your fiery mood"
+      }
+    ],
+    confused: [
+      {
+        name: "Majestic Casual",
+        handle: "@majesticcasual",
+        description: "Indie and alternative music discoveries",
+        genre: "Indie/Alternative",
+        subscribers: "5M subscribers",
+        why: "Thought-provoking music to help clear confusion"
+      },
+      {
+        name: "Mr Suicide Sheep",
+        handle: "@MrSuicideSheep",
+        description: "Electronic and indie music channel",
+        genre: "Electronic/Indie",
+        subscribers: "12M subscribers",
+        why: "Atmospheric tracks for contemplative moments"
+      }
+    ],
+    excited: [
+      {
+        name: "Trap Nation",
+        handle: "@TrapNation",
+        description: "Best trap music and remixes",
+        genre: "Trap/EDM",
+        subscribers: "30M subscribers",
+        why: "Exciting beats to amplify your enthusiasm"
+      },
+      {
+        name: "UKF Dubstep",
+        handle: "@UKFDubstep",
+        description: "Dubstep and bass music channel",
+        genre: "Dubstep/Bass",
+        subscribers: "5M subscribers",
+        why: "High-energy drops for your excited state"
+      }
+    ],
+    melancholic: [
+      {
+        name: "Alexrainbird Music",
+        handle: "@alexrainbirdMusic",
+        description: "Indie music with melancholic vibes",
+        genre: "Indie/Alternative",
+        subscribers: "2M subscribers",
+        why: "Beautiful melancholic indie tracks"
+      },
+      {
+        name: "The Sound You Need",
+        handle: "@thesoundyouneed",
+        description: "Emotional indie and electronic music",
+        genre: "Indie/Electronic",
+        subscribers: "7M subscribers",
+        why: "Emotional depth for melancholic reflection"
+      }
+    ],
+    confident: [
+      {
+        name: "Rap Nation",
+        handle: "@RapNation",
+        description: "Best hip hop and rap music",
+        genre: "Hip Hop/Rap",
+        subscribers: "9M subscribers",
+        why: "Confident rap tracks to boost your swagger"
+      },
+      {
+        name: "Trap City",
+        handle: "@OfficialTrapCity",
+        description: "Trap music and bass boosted tracks",
+        genre: "Trap/Hip Hop",
+        subscribers: "15M subscribers",
+        why: "Bold beats that match your confidence"
+      }
+    ],
+    blissful: [
+      {
+        name: "Silk Music",
+        handle: "@SilkMusic",
+        description: "Progressive house and chillout music",
+        genre: "Progressive House/Chillout",
+        subscribers: "1M subscribers",
+        why: "Blissful progressive melodies and euphoric vibes"
+      },
+      {
+        name: "MrRevillz",
+        handle: "@MrRevillz",
+        description: "Future bass and melodic dubstep",
+        genre: "Future Bass/Melodic",
+        subscribers: "3M subscribers",
+        why: "Uplifting melodic sounds for blissful moments"
+      }
+    ],
+    lonely: [
+      {
+        name: "Chill Nation",
+        handle: "@ChillNation",
+        description: "Chill music and sad songs",
+        genre: "Chill/Emotional",
+        subscribers: "7M subscribers",
+        why: "Comforting music for lonely times"
+      },
+      {
+        name: "CloudKid",
+        handle: "@CloudKid",
+        description: "Emotional indie and electronic music",
+        genre: "Indie/Electronic",
+        subscribers: "4M subscribers",
+        why: "Emotional tracks that keep you company"
+      }
+    ],
+    hopeful: [
+      {
+        name: "Epic Music World",
+        handle: "@EpicMusicWorld",
+        description: "Inspirational and epic orchestral music",
+        genre: "Epic/Orchestral",
+        subscribers: "2M subscribers",
+        why: "Uplifting orchestral music for hopeful dreams"
+      },
+      {
+        name: "Seeking Light",
+        handle: "@SeekingLight",
+        description: "Inspirational music and soundtracks",
+        genre: "Inspirational/Cinematic",
+        subscribers: "800K subscribers",
+        why: "Inspiring melodies that fuel hope and optimism"
+      }
+    ],
+    overwhelmed: [
+      {
+        name: "Calming Sounds",
+        handle: "@CalmingSounds",
+        description: "Gentle music to reduce overwhelm",
+        genre: "Ambient/Healing",
+        subscribers: "1.5M subscribers",
+        why: "Gentle ambient sounds to help you breathe"
+      },
+      {
+        name: "Calm Meditation",
+        handle: "@CalmMeditationMusic",
+        description: "Meditation music for mental clarity",
+        genre: "Meditation/Spa",
+        subscribers: "3M subscribers",
+        why: "Grounding music to restore balance when overwhelmed"
       }
     ]
   };
