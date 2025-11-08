@@ -1,12 +1,13 @@
 import { BarChart3, TrendingUp, Heart, Zap } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 const moodData = [
-  { mood: 'Calm', percentage: 45, color: 'bg-blue-500', icon: Heart },
-  { mood: 'Energetic', percentage: 30, color: 'bg-orange-500', icon: Zap },
-  { mood: 'Sad', percentage: 15, color: 'bg-gray-500', icon: TrendingUp },
-  { mood: 'Anxious', percentage: 10, color: 'bg-amber-500', icon: BarChart3 },
+  { mood: 'Calm', percentage: 45, value: 45, color: '#3B82F6', bgColor: 'bg-blue-500', icon: Heart },
+  { mood: 'Energetic', percentage: 30, value: 30, color: '#F97316', bgColor: 'bg-orange-500', icon: Zap },
+  { mood: 'Sad', percentage: 15, value: 15, color: '#8B5CF6', bgColor: 'bg-purple-500', icon: TrendingUp },
+  { mood: 'Anxious', percentage: 10, value: 10, color: '#F59E0B', bgColor: 'bg-amber-500', icon: BarChart3 },
 ];
 
 const activities = [
@@ -33,66 +34,126 @@ export default function WeeklyMoodOverview() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6 mb-6">
-          <Card data-testid="card-mood-distribution">
+          <Card data-testid="card-mood-distribution" className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30">
             <CardHeader>
-              <CardTitle>Mood Distribution</CardTitle>
+              <CardTitle className="text-2xl">Mood Distribution</CardTitle>
               <CardDescription>Your emotional landscape this week</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {moodData.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <div key={item.mood} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Icon className="w-4 h-4 text-muted-foreground" />
-                        <span className="font-medium">{item.mood}</span>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={moodData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ mood, percentage }) => `${mood}: ${percentage}%`}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {moodData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)', 
+                        border: 'none', 
+                        borderRadius: '8px',
+                        color: 'white'
+                      }}
+                    />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      height={36}
+                      formatter={(value, entry: any) => {
+                        const Icon = entry.payload.icon;
+                        return (
+                          <span className="inline-flex items-center gap-2">
+                            {value}
+                          </span>
+                        );
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="mt-6 space-y-3">
+                {moodData.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={item.mood} className="flex items-center justify-between p-3 rounded-lg hover-elevate" style={{ backgroundColor: `${item.color}15` }}>
+                      <div className="flex items-center gap-3">
+                        <Icon className="w-5 h-5" style={{ color: item.color }} />
+                        <span className="font-semibold">{item.mood}</span>
                       </div>
-                      <span className="text-sm text-muted-foreground">{item.percentage}%</span>
+                      <span className="text-lg font-bold" style={{ color: item.color }}>{item.percentage}%</span>
                     </div>
-                    <Progress value={item.percentage} className="h-2" data-testid={`progress-${item.mood.toLowerCase()}`} />
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </CardContent>
           </Card>
 
-          <Card data-testid="card-creative-activities">
+          <Card data-testid="card-creative-activities" className="bg-gradient-to-br from-orange-50 to-pink-50 dark:from-orange-950/30 dark:to-pink-950/30">
             <CardHeader>
-              <CardTitle>Creative Activities</CardTitle>
+              <CardTitle className="text-2xl">Creative Activities</CardTitle>
               <CardDescription>What you've been creating</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {activities.map((activity) => (
-                  <div
-                    key={activity.name}
-                    className="flex items-center justify-between p-3 rounded-md bg-accent/50"
-                    data-testid={`activity-${activity.name.toLowerCase().replace(' ', '-')}`}
-                  >
-                    <span className="font-medium">{activity.name}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">{activity.count} sessions</span>
+                {activities.map((activity, idx) => {
+                  const gradients = [
+                    'from-pink-500 to-rose-500',
+                    'from-orange-500 to-amber-500',
+                    'from-blue-500 to-cyan-500',
+                    'from-purple-500 to-fuchsia-500'
+                  ];
+                  return (
+                    <div
+                      key={activity.name}
+                      className={`flex items-center justify-between p-4 rounded-lg bg-gradient-to-r ${gradients[idx]} text-white shadow-lg hover-elevate`}
+                      data-testid={`activity-${activity.name.toLowerCase().replace(' ', '-')}`}
+                    >
+                      <span className="font-semibold text-lg">{activity.name}</span>
+                      <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full">
+                        <span className="font-bold">{activity.count}</span>
+                        <span className="text-sm">sessions</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <Card data-testid="card-ai-insights">
+        <Card data-testid="card-ai-insights" className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30">
           <CardHeader>
-            <CardTitle>AI-Generated Insights</CardTitle>
+            <CardTitle className="text-2xl">AI-Generated Insights</CardTitle>
             <CardDescription>Patterns and observations about your creative journey</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-2 gap-4">
-              {insights.map((insight, idx) => (
-                <Card key={idx} className="p-4" data-testid={`insight-${idx}`}>
-                  <p className="text-sm">{insight}</p>
-                </Card>
-              ))}
+              {insights.map((insight, idx) => {
+                const gradients = [
+                  'from-emerald-400 to-teal-400',
+                  'from-cyan-400 to-blue-400',
+                  'from-violet-400 to-purple-400',
+                  'from-fuchsia-400 to-pink-400'
+                ];
+                return (
+                  <div 
+                    key={idx} 
+                    className={`p-5 rounded-lg bg-gradient-to-br ${gradients[idx]} text-white shadow-lg hover-elevate`}
+                    data-testid={`insight-${idx}`}
+                  >
+                    <p className="font-medium leading-relaxed">{insight}</p>
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
