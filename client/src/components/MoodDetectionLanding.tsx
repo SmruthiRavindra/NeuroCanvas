@@ -167,11 +167,16 @@ export default function MoodDetectionLanding() {
         const avgPitch = voiceFeatures.avgPitch / voiceFeatures.samples;
         const avgEnergy = voiceFeatures.energy / voiceFeatures.samples;
 
-        // Prioritize transcript-based analysis if available
-        const analysisText = spokenText || 
-          `Voice characteristics: Average pitch ${avgPitch.toFixed(0)}Hz (${avgPitch > 200 ? 'high-pitched' : avgPitch < 150 ? 'low-pitched' : 'moderate'}), ` +
+        // Build voice characteristics string
+        const voiceCharacteristics = 
+          `Voice characteristics: Average pitch ${avgPitch.toFixed(0)}Hz (${avgPitch > 200 ? 'high-pitched' : avgPitch < 150 ? 'low-pitched' : 'moderate-pitched'}), ` +
           `volume ${avgVolume.toFixed(0)} (${avgVolume > 100 ? 'loud' : avgVolume < 80 ? 'quiet' : 'normal'}), ` +
           `energy ${avgEnergy.toFixed(0)} (${avgEnergy > 3500 ? 'very energetic' : avgEnergy < 2000 ? 'low energy' : 'moderate'})`;
+
+        // Combine transcript with voice characteristics for comprehensive analysis
+        const analysisText = spokenText 
+          ? `${spokenText}. ${voiceCharacteristics}`
+          : voiceCharacteristics;
 
         console.log('Sending to Gemini:', analysisText);
 

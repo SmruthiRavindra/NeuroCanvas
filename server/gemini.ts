@@ -66,15 +66,136 @@ Respond with JSON in this exact format:
     throw new Error("Empty response from Gemini");
   } catch (error) {
     console.error("Gemini mood analysis error:", error);
-    // Fallback to random mood
-    const moods: Array<'calm' | 'energetic' | 'sad' | 'anxious' | 'happy' | 'stressed' | 'peaceful' | 'angry' | 'confused' | 'excited' | 'melancholic' | 'confident' | 'blissful' | 'lonely' | 'hopeful' | 'overwhelmed'> = 
-      ['calm', 'energetic', 'sad', 'anxious', 'happy', 'stressed', 'peaceful', 'angry', 'confused', 'excited', 'melancholic', 'confident', 'blissful', 'lonely', 'hopeful', 'overwhelmed'];
+    // Intelligent local fallback analysis
+    return analyzeLocally(userInput);
+  }
+}
+
+// Local mood analysis when Gemini API is unavailable
+function analyzeLocally(input: string): {
+  mood: 'calm' | 'energetic' | 'sad' | 'anxious' | 'happy' | 'stressed' | 'peaceful' | 'angry' | 'confused' | 'excited' | 'melancholic' | 'confident' | 'blissful' | 'lonely' | 'hopeful' | 'overwhelmed';
+  confidence: number;
+  reasoning: string;
+} {
+  const text = input.toLowerCase();
+  
+  // Expanded keyword dictionaries with synonyms and variations
+  const blissfulWords = ['ecstatic', 'euphoric', 'overjoyed', 'elated', 'amazing', 'wonderful', 'fantastic', 'incredible', 'perfect', 'heaven', 'cloud nine', 'on top of the world'];
+  const happyWords = ['happy', 'joy', 'joyful', 'cheerful', 'delighted', 'pleased', 'glad', 'good', 'great', 'smile', 'smiling', 'laughing', 'upbeat'];
+  const excitedWords = ['excited', 'thrilled', 'pumped', 'eager', 'anticipating', 'can\'t wait', 'looking forward', 'psyched', 'amped', 'fired up', 'stoked'];
+  const confidentWords = ['confident', 'assured', 'determined', 'capable', 'strong', 'ready', 'know', 'certain', 'sure', 'prepared', 'got this'];
+  const hopefulWords = ['hopeful', 'optimistic', 'expecting', 'encouraged', 'positive', 'better', 'improving', 'bright', 'light at end'];
+  const peacefulWords = ['peaceful', 'serene', 'tranquil', 'quiet', 'still', 'undisturbed', 'zen', 'meditative', 'centered', 'balanced'];
+  const calmWords = ['calm', 'relaxed', 'content', 'steady', 'easy', 'comfortable', 'okay', 'fine', 'chill', 'mellow', 'easygoing'];
+  const energeticWords = ['energetic', 'hyper', 'active', 'fast', 'quick', 'loud', 'dynamic', 'lively', 'vigorous', 'full of energy'];
+  
+  const sadWords = ['sad', 'down', 'disappointed', 'unhappy', 'hurt', 'cry', 'crying', 'terrible', 'awful', 'depressed', 'miserable', 'upset', 'heartbroken'];
+  const lonelyWords = ['lonely', 'alone', 'isolated', 'disconnected', 'abandoned', 'nobody', 'by myself', 'friendless', 'solitary'];
+  const melancholicWords = ['melancholic', 'blue', 'wistful', 'pensive', 'gloomy', 'grey', 'gray', 'empty', 'hollow', 'numb', 'listless'];
+  const anxiousWords = ['anxious', 'worried', 'nervous', 'scared', 'afraid', 'uneasy', 'uncertain', 'panic', 'jittery', 'on edge', 'apprehensive', 'tense', 'restless', 'racing heart', 'butterflies'];
+  const stressedWords = ['stressed', 'stress', 'tense', 'tension', 'pressure', 'pressured', 'strained', 'wound up', 'burnt out', 'exhausted'];
+  const overwhelmedWords = ['overwhelmed', 'swamped', 'drowning', 'crushed', 'overloaded', 'too much', 'can\'t handle', 'can\'t cope', 'breaking point'];
+  const angryWords = ['angry', 'mad', 'frustrated', 'irritated', 'furious', 'annoyed', 'hate', 'pissed', 'enraged', 'outraged', 'livid'];
+  const confusedWords = ['confused', 'uncertain', 'lost', 'don\'t know', 'bewildered', 'unclear', 'puzzled', 'baffled', 'perplexed', 'mixed up'];
+  
+  // Parse voice characteristics from formatted string
+  let voiceAnalysis = null;
+  const pitchMatch = text.match(/pitch (\d+)hz \((high|low|moderate)-pitched\)/);
+  const volumeMatch = text.match(/volume (\d+) \((loud|quiet|normal)\)/);
+  const energyMatch = text.match(/energy (\d+) \((very energetic|low energy|moderate)\)/);
+  
+  if (pitchMatch || volumeMatch || energyMatch) {
+    const pitch = pitchMatch ? parseInt(pitchMatch[1]) : 0;
+    const pitchLevel = pitchMatch ? pitchMatch[2] : 'moderate';
+    const volume = volumeMatch ? parseInt(volumeMatch[1]) : 0;
+    const volumeLevel = volumeMatch ? volumeMatch[2] : 'normal';
+    const energy = energyMatch ? parseInt(energyMatch[1]) : 0;
+    const energyLevel = energyMatch ? energyMatch[2] : 'moderate';
+    
+    // Analyze voice patterns
+    if (energyLevel === 'very energetic' && volumeLevel === 'loud') {
+      return { mood: 'energetic', confidence: 72, reasoning: 'High energy and loud voice detected' };
+    }
+    if (energyLevel === 'very energetic') {
+      return { mood: 'excited', confidence: 70, reasoning: 'High energy level suggests excitement' };
+    }
+    if (pitchLevel === 'high' && (energyLevel === 'very energetic' || volumeLevel === 'loud')) {
+      return { mood: 'anxious', confidence: 70, reasoning: 'High pitch with elevated energy indicates anxiety' };
+    }
+    if (pitchLevel === 'high' && volumeLevel === 'quiet') {
+      return { mood: 'anxious', confidence: 68, reasoning: 'High quiet voice suggests nervousness' };
+    }
+    if (energyLevel === 'low energy' && volumeLevel === 'quiet') {
+      return { mood: 'sad', confidence: 68, reasoning: 'Low energy and quiet voice indicate sadness' };
+    }
+    if (pitchLevel === 'low' && volumeLevel === 'quiet') {
+      return { mood: 'calm', confidence: 67, reasoning: 'Low calm voice characteristics' };
+    }
+    if (pitchLevel === 'moderate' && volumeLevel === 'quiet') {
+      return { mood: 'peaceful', confidence: 66, reasoning: 'Moderate quiet voice suggests peacefulness' };
+    }
+    
+    voiceAnalysis = { pitch, pitchLevel, volume, volumeLevel, energy, energyLevel };
+  }
+  
+  // Count keyword matches for each mood
+  const moodScores = {
+    blissful: countMatches(text, blissfulWords),
+    happy: countMatches(text, happyWords),
+    excited: countMatches(text, excitedWords),
+    confident: countMatches(text, confidentWords),
+    hopeful: countMatches(text, hopefulWords),
+    peaceful: countMatches(text, peacefulWords),
+    calm: countMatches(text, calmWords),
+    energetic: countMatches(text, energeticWords),
+    sad: countMatches(text, sadWords),
+    lonely: countMatches(text, lonelyWords),
+    melancholic: countMatches(text, melancholicWords),
+    anxious: countMatches(text, anxiousWords),
+    stressed: countMatches(text, stressedWords),
+    overwhelmed: countMatches(text, overwhelmedWords),
+    angry: countMatches(text, angryWords),
+    confused: countMatches(text, confusedWords)
+  };
+  
+  // Find mood with highest score
+  const sortedMoods = Object.entries(moodScores)
+    .sort((a, b) => b[1] - a[1])
+    .filter(([_, score]) => score > 0);
+  
+  if (sortedMoods.length > 0) {
+    const [topMood, score] = sortedMoods[0];
+    const confidence = Math.min(85, 60 + (score * 12)); // 60% base + 12% per keyword match
     return {
-      mood: moods[Math.floor(Math.random() * moods.length)],
-      confidence: 75,
-      reasoning: "Analysis based on general patterns"
+      mood: topMood as any,
+      confidence,
+      reasoning: `Detected "${topMood}" from ${score} keyword indicator(s)`
     };
   }
+  
+  // If no keywords matched and we have voice data, make educated guess
+  if (voiceAnalysis) {
+    if (voiceAnalysis.energy > 3000) {
+      return { mood: 'energetic', confidence: 55, reasoning: 'Moderate energy detected in voice' };
+    }
+    if (voiceAnalysis.pitch > 200) {
+      return { mood: 'anxious', confidence: 52, reasoning: 'Higher pitch detected, may indicate anxiety' };
+    }
+    if (voiceAnalysis.energy < 2500 && voiceAnalysis.volume < 80) {
+      return { mood: 'sad', confidence: 53, reasoning: 'Low energy and volume suggest sadness' };
+    }
+  }
+  
+  // True neutral fallback - be more conservative
+  return {
+    mood: 'confused',
+    confidence: 45,
+    reasoning: 'Unable to clearly identify emotional state from available data'
+  };
+}
+
+function countMatches(text: string, keywords: string[]): number {
+  return keywords.filter(keyword => text.includes(keyword)).length;
 }
 
 export async function generateCreativeSuggestions(
