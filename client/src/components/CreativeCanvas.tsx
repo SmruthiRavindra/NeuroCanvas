@@ -328,6 +328,10 @@ export default function CreativeCanvas() {
     fetchSuggestions(activeMode);
   }, [activeMode, currentMood]);
 
+  useEffect(() => {
+    setMusicAnalysis(null);
+  }, [userInput, activeMode]);
+
   const fetchSuggestions = async (mode: 'music' | 'art' | 'poetry', customPrompt?: string) => {
     setLoadingSuggestions(true);
     try {

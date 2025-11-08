@@ -751,12 +751,24 @@ function analyzeMusicallyLocally(
   const text = userInput.toLowerCase();
   
   // Enhanced detection logic
-  const musicalTerms = ['bpm', 'tempo', 'chord', 'chords', 'melody', 'beat', 'rhythm', 'key', 'scale', 'instrument', 'progression', 'notes', 'acoustic', 'electric', 'synthesizer', 'drums', 'bass', 'major', 'minor'];
+  const musicalTerms = ['bpm', 'tempo', 'chord', 'chords', 'melody', 'beat', 'rhythm', 'key', 'scale', 'instrument', 'progression', 'notes', 'acoustic', 'electric', 'synthesizer', 'drums', 'bass', 'major', 'minor', 'sharp', 'flat'];
   const hasMusicalTerms = musicalTerms.some(term => text.includes(term));
-  const wordCount = userInput.split(/\s+/).length;
   
-  // If it has musical terminology or is very short, it's likely a tune description
-  const looksLikeTune = hasMusicalTerms || wordCount < 5;
+  // Check for chord notation patterns (e.g., "Am", "Cmaj7", "F#m", "Bbm")
+  // Require chord suffixes or multiple chord instances to avoid false positives with lyrics
+  // Case-sensitive to avoid matching words like "am" in lyrics
+  const chordPattern = /\b[A-G][#b]?(m|maj|min|aug|dim|sus|add|\d|\/[A-G])/g;
+  const chordMatches = userInput.match(chordPattern);
+  const hasMultipleChords = chordMatches && chordMatches.length >= 2;
+  
+  // Detect simple chord sequences like "C G Am F" (multiple single letters, short tokens)
+  const words = userInput.split(/\s+/);
+  const simpleChordPattern = /^[A-G][#b]?m?$/;
+  const simpleChordCount = words.filter(word => simpleChordPattern.test(word.trim())).length;
+  const hasSimpleChordSequence = simpleChordCount >= 3 && words.length <= 10;
+  
+  // If it has musical terminology or chord notation, it's likely a tune description
+  const looksLikeTune = hasMusicalTerms || hasMultipleChords || hasSimpleChordSequence;
   
   if (looksLikeTune) {
     // Input appears to be tune - suggest lyrics
