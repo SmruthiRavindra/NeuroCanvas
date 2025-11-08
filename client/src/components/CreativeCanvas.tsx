@@ -246,6 +246,9 @@ export default function CreativeCanvas() {
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [transcript, setTranscript] = useState('');
   const recognitionRef = useRef<any>(null);
+  const [methodActingChat, setMethodActingChat] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
+  const [methodActingInput, setMethodActingInput] = useState('');
+  const [loadingMethodActing, setLoadingMethodActing] = useState(false);
 
   const currentMood = mood || 'calm';
   const fallbackSuggestions = moodSuggestions[currentMood];
@@ -410,6 +413,56 @@ export default function CreativeCanvas() {
     setUserInput(userInput + (userInput ? '\n' : '') + colorText);
   };
 
+  const sendMethodActingMessage = async () => {
+    if (!methodActingInput.trim()) {
+      toast({
+        title: "Input required",
+        description: "Please describe what you want to draw",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const userMessage = methodActingInput.trim();
+    setMethodActingInput('');
+    setMethodActingChat(prev => [...prev, { role: 'user', content: userMessage }]);
+    setLoadingMethodActing(true);
+
+    try {
+      const response = await fetch('/api/method-acting-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          drawingPrompt: userMessage,
+          mood: currentMood 
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMethodActingChat(prev => [...prev, { 
+          role: 'assistant', 
+          content: data.description 
+        }]);
+      } else {
+        toast({
+          title: "Failed to generate description",
+          description: "Could not create immersive description. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error in method acting chat:', error);
+      toast({
+        title: "Connection error",
+        description: "Could not connect to the server. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingMethodActing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 mood-transition">
       <div className="max-w-7xl mx-auto px-4 py-12">
@@ -490,6 +543,74 @@ export default function CreativeCanvas() {
                         </div>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* Method Acting Chatbot for Art Mode */}
+                {activeMode === 'art' && (
+                  <div className="mb-6 p-6 rounded-2xl bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/20 dark:to-pink-950/20 border border-purple-200/50 dark:border-purple-800/50 backdrop-blur-sm">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Sparkles className="w-5 h-5 text-purple-600" />
+                      <p className="text-base font-bold">Method Acting Guide</p>
+                      <Badge variant="outline" className="text-xs">Experience Your Art</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Describe what you want to draw, and I'll help you experience it as if you're living it yourself.
+                    </p>
+                    
+                    {/* Chat Messages */}
+                    {methodActingChat.length > 0 && (
+                      <div className="space-y-3 mb-4 max-h-[400px] overflow-y-auto">
+                        {methodActingChat.map((message, idx) => (
+                          <div
+                            key={idx}
+                            className={`p-4 rounded-lg ${
+                              message.role === 'user'
+                                ? 'bg-primary/10 border border-primary/20 ml-8'
+                                : 'bg-purple-100/50 dark:bg-purple-900/20 border border-purple-200/30 dark:border-purple-700/30 mr-8'
+                            }`}
+                            data-testid={`message-${message.role}-${idx}`}
+                          >
+                            <p className="text-xs font-semibold mb-1 capitalize text-muted-foreground">
+                              {message.role === 'user' ? 'You' : 'AI Muse'}
+                            </p>
+                            <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                              {message.content}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Chat Input */}
+                    <div className="flex gap-2">
+                      <Textarea
+                        placeholder="E.g., girl riding a horse, sunset over mountains, dancer in motion..."
+                        className="min-h-[60px] resize-none text-sm"
+                        value={methodActingInput}
+                        onChange={(e) => setMethodActingInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            sendMethodActingMessage();
+                          }
+                        }}
+                        data-testid="textarea-method-acting"
+                      />
+                      <Button
+                        onClick={sendMethodActingMessage}
+                        disabled={loadingMethodActing || !methodActingInput.trim()}
+                        size="icon"
+                        className="h-full"
+                        data-testid="button-send-method-acting"
+                      >
+                        {loadingMethodActing ? (
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Send className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 )}
                 
