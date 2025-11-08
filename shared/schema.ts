@@ -141,3 +141,21 @@ export const voiceGenerationSchema = z.object({
 
 export type CreativeSuggestionRequest = z.infer<typeof creativeSuggestionSchema>;
 export type VoiceGenerationRequest = z.infer<typeof voiceGenerationSchema>;
+
+// API Keys table for storing user's Gemini API keys
+export const apiKeys = pgTable("api_keys", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  apiKey: text("api_key").notNull(),
+  label: text("label"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
+export const insertApiKeySchema = createInsertSchema(apiKeys).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertApiKey = z.infer<typeof insertApiKeySchema>;
+export type ApiKey = typeof apiKeys.$inferSelect;

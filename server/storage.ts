@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type UpdateUser, type VoicePersona, type JournalEntry, type InsertJournalEntry, type MoodHistory, type InsertMoodHistory } from "@shared/schema";
+import { type User, type InsertUser, type UpdateUser, type VoicePersona, type JournalEntry, type InsertJournalEntry, type MoodHistory, type InsertMoodHistory, type ApiKey, type InsertApiKey } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 // Voice Persona seed data - 8 AI assistants (4 male, 4 female)
@@ -91,6 +91,10 @@ export interface IStorage {
   getJournalEntry(id: string): Promise<JournalEntry | undefined>;
   createMoodHistory(entry: InsertMoodHistory): Promise<MoodHistory>;
   getMoodHistory(userId: string, limit?: number): Promise<MoodHistory[]>;
+  createApiKey(key: InsertApiKey): Promise<ApiKey>;
+  getApiKeys(userId: string): Promise<ApiKey[]>;
+  getActiveApiKeys(userId: string): Promise<ApiKey[]>;
+  deleteApiKey(id: string, userId: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -98,12 +102,14 @@ export class MemStorage implements IStorage {
   private voicePersonas: Map<string, VoicePersona>;
   private journalEntries: Map<string, JournalEntry>;
   private moodHistoryEntries: Map<string, MoodHistory>;
+  private apiKeys: Map<string, ApiKey>;
 
   constructor() {
     this.users = new Map();
     this.voicePersonas = new Map();
     this.journalEntries = new Map();
     this.moodHistoryEntries = new Map();
+    this.apiKeys = new Map();
     
     // Seed voice personas
     VOICE_PERSONAS.forEach(persona => {
@@ -203,6 +209,38 @@ export class MemStorage implements IStorage {
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, limit);
     return entries;
+  }
+
+  async createApiKey(insertKey: InsertApiKey): Promise<ApiKey> {
+    const id = randomUUID();
+    const key: ApiKey = {
+      id,
+      userId: insertKey.userId,
+      apiKey: insertKey.apiKey,
+      label: insertKey.label ?? null,
+      isActive: insertKey.isActive ?? true,
+      createdAt: new Date(),
+    };
+    this.apiKeys.set(id, key);
+    return key;
+  }
+
+  async getApiKeys(userId: string): Promise<ApiKey[]> {
+    return Array.from(this.apiKeys.values())
+      .filter(key => key.userId === userId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getActiveApiKeys(userId: string): Promise<ApiKey[]> {
+    return Array.from(this.apiKeys.values())
+      .filter(key => key.userId === userId && key.isActive)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async deleteApiKey(id: string, userId: string): Promise<boolean> {
+    const key = this.apiKeys.get(id);
+    if (!key || key.userId !== userId) return false;
+    return this.apiKeys.delete(id);
   }
 }
 

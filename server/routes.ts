@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { analyzeMoodFromText, generateCreativeSuggestions, chatAboutHobby, suggestYouTubeChannels, generateMethodActingDescription, analyzeMusicInput } from "./gemini";
-import { insertJournalEntrySchema, insertMoodHistorySchema, registerSchema, loginSchema, guardianSchema, onboardingSchema } from "@shared/schema";
+import { insertJournalEntrySchema, insertMoodHistorySchema, registerSchema, loginSchema, guardianSchema, onboardingSchema, insertApiKeySchema } from "@shared/schema";
 import passport from "passport";
 import { requireAuth } from "./auth";
 import bcrypt from "bcryptjs";
@@ -175,6 +175,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Onboarding error:", error);
       res.status(500).json({ error: "Failed to update onboarding details" });
+    }
+  });
+
+  // API Key management routes
+  app.get("/api/api-keys", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as Express.User;
+      const keys = await storage.getApiKeys(user.id);
+      
+      // Return keys with masked values for security
+      const maskedKeys = keys.map(key => ({
+        id: key.id,
+        label: key.label,
+        apiKey: `${key.apiKey.substring(0, 10)}...${key.apiKey.substring(key.apiKey.length - 4)}`,
+        isActive: key.isActive,
+        createdAt: key.createdAt,
+      }));
+      
+      res.json({ keys: maskedKeys });
+    } catch (error) {
+      console.error("Get API keys error:", error);
+      res.status(500).json({ error: "Failed to fetch API keys" });
+    }
+  });
+
+  app.post("/api/api-keys", requireAuth, async (req, res) => {
+    try {
+      const validation = insertApiKeySchema.safeParse({
+        ...req.body,
+        userId: (req.user as Express.User).id,
+      });
+      
+      if (!validation.success) {
+        return res.status(400).json({ error: "Invalid input", details: validation.error.issues });
+      }
+
+      const key = await storage.createApiKey(validation.data);
+      
+      // Return masked key
+      res.json({ 
+        success: true,
+        key: {
+          id: key.id,
+          label: key.label,
+          apiKey: `${key.apiKey.substring(0, 10)}...${key.apiKey.substring(key.apiKey.length - 4)}`,
+          isActive: key.isActive,
+          createdAt: key.createdAt,
+        }
+      });
+    } catch (error) {
+      console.error("Create API key error:", error);
+      res.status(500).json({ error: "Failed to create API key" });
+    }
+  });
+
+  app.delete("/api/api-keys/:id", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as Express.User;
+      const success = await storage.deleteApiKey(req.params.id, user.id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "API key not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete API key error:", error);
+      res.status(500).json({ error: "Failed to delete API key" });
     }
   });
 
