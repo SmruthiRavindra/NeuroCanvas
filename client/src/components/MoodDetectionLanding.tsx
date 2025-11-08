@@ -37,19 +37,38 @@ export default function MoodDetectionLanding() {
 
   const analyzeVoiceAndVideo = async () => {
     try {
+      setAnalysisState('analyzing');
+      setTranscript('');
+
       // Request microphone and camera access
-      const constraints = videoEnabled && modelsLoaded
+      const wantsVideo = videoEnabled && modelsLoaded;
+      const constraints = wantsVideo
         ? { audio: true, video: { width: 720, height: 480, facingMode: 'user' } }
         : { audio: true };
       
-      const stream = await navigator.mediaDevices.getUserMedia(constraints).catch((err) => {
-        console.warn('Camera access denied, falling back to voice-only:', err);
-        setVideoEnabled(false);
-        return navigator.mediaDevices.getUserMedia({ audio: true });
-      });
+      let stream: MediaStream;
+      let actuallyHasVideo = false;
       
-      setAnalysisState('analyzing');
-      setTranscript('');
+      try {
+        console.log('Requesting media with constraints:', constraints);
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        const videoTracks = stream.getVideoTracks();
+        actuallyHasVideo = wantsVideo && videoTracks.length > 0;
+        console.log('✓ Media stream obtained!');
+        console.log('  - Video tracks:', videoTracks.length, videoTracks.map(t => `${t.label} (enabled: ${t.enabled})`));
+        console.log('  - Audio tracks:', stream.getAudioTracks().length);
+        console.log('  - actuallyHasVideo:', actuallyHasVideo);
+      } catch (err) {
+        console.error('✗ Camera access denied:', err);
+        // If camera failed but we wanted it, fall back to audio only
+        if (wantsVideo) {
+          console.log('Falling back to voice-only mode');
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          actuallyHasVideo = false;
+        } else {
+          throw err;
+        }
+      }
 
       // Promise-based speech recognition wrapper
       const startRecognition = (): Promise<{ transcript: string; hasTranscript: boolean }> => {
@@ -176,9 +195,6 @@ export default function MoodDetectionLanding() {
       }, 100);
 
       // Setup video analysis if camera is available
-      const videoTrack = stream.getVideoTracks()[0];
-      const hasVideo = videoTrack && videoEnabled && modelsLoaded;
-      
       const videoEmotions = {
         happy: 0,
         sad: 0,
@@ -192,34 +208,55 @@ export default function MoodDetectionLanding() {
 
       let faceAnalysisInterval: ReturnType<typeof setInterval> | null = null;
 
-      if (hasVideo && videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-
-        // Analyze facial expressions every 500ms
-        faceAnalysisInterval = setInterval(async () => {
-          if (videoRef.current) {
-            try {
-              const detections = await faceapi
-                .detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions())
-                .withFaceExpressions();
-
-              if (detections && detections.expressions) {
-                const expressions = detections.expressions;
-                videoEmotions.happy += expressions.happy || 0;
-                videoEmotions.sad += expressions.sad || 0;
-                videoEmotions.angry += expressions.angry || 0;
-                videoEmotions.fearful += expressions.fearful || 0;
-                videoEmotions.disgusted += expressions.disgusted || 0;
-                videoEmotions.surprised += expressions.surprised || 0;
-                videoEmotions.neutral += expressions.neutral || 0;
-                videoEmotions.samples++;
-              }
-            } catch (error) {
-              console.warn('Face detection error:', error);
-            }
+      if (actuallyHasVideo) {
+        console.log('Setting up video stream and facial analysis');
+        
+        // Wait for React to render the video element
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          
+          // Wait for video to be ready
+          try {
+            await videoRef.current.play();
+            console.log('Video playing, starting facial expression detection');
+          } catch (playError) {
+            console.warn('Video play failed:', playError);
           }
-        }, 500);
+
+          // Analyze facial expressions every 500ms
+          faceAnalysisInterval = setInterval(async () => {
+            if (videoRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
+              try {
+                const detections = await faceapi
+                  .detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions())
+                  .withFaceExpressions();
+
+                if (detections && detections.expressions) {
+                  const expressions = detections.expressions;
+                  videoEmotions.happy += expressions.happy || 0;
+                  videoEmotions.sad += expressions.sad || 0;
+                  videoEmotions.angry += expressions.angry || 0;
+                  videoEmotions.fearful += expressions.fearful || 0;
+                  videoEmotions.disgusted += expressions.disgusted || 0;
+                  videoEmotions.surprised += expressions.surprised || 0;
+                  videoEmotions.neutral += expressions.neutral || 0;
+                  videoEmotions.samples++;
+                  console.log('Face detected! Sample #' + videoEmotions.samples, expressions);
+                } else {
+                  console.log('No face detected in frame');
+                }
+              } catch (error) {
+                console.warn('Face detection error:', error);
+              }
+            }
+          }, 500);
+        } else {
+          console.warn('Video ref not available after waiting');
+        }
+      } else {
+        console.log('Video analysis skipped - actuallyHasVideo:', actuallyHasVideo);
       }
 
       // Start speech recognition (runs for 18 seconds)
@@ -412,8 +449,8 @@ export default function MoodDetectionLanding() {
           )}
         </div>
 
-        {/* Video Preview (shown during analysis) */}
-        {analysisState === 'analyzing' && videoEnabled && (
+        {/* Video Preview (shown during analysis when camera is active) */}
+        {analysisState === 'analyzing' && (
           <div className="mt-8 flex justify-center">
             <div className="relative bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
               <div className="absolute top-2 right-2 bg-purple-900/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs text-white font-medium flex items-center gap-2 z-10">
@@ -425,6 +462,7 @@ export default function MoodDetectionLanding() {
                 className="rounded-xl w-80 h-60 object-cover"
                 muted
                 playsInline
+                autoPlay
                 data-testid="video-preview"
               />
             </div>
