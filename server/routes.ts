@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { analyzeMoodFromText, generateCreativeSuggestions, chatAboutHobby, suggestYouTubeChannels, generateMethodActingDescription } from "./gemini";
+import { analyzeMoodFromText, generateCreativeSuggestions, chatAboutHobby, suggestYouTubeChannels, generateMethodActingDescription, analyzeMusicInput } from "./gemini";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Multimodal mood detection endpoint (voice + video)
@@ -160,6 +160,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error in method acting chat:", error);
       res.status(500).json({ error: "Failed to generate description" });
+    }
+  });
+
+  // Intelligent music input analysis endpoint
+  app.post("/api/analyze-music", async (req, res) => {
+    try {
+      const { userInput, mood } = req.body;
+      if (!userInput || !mood) {
+        return res.status(400).json({ error: "User input and mood are required" });
+      }
+
+      const result = await analyzeMusicInput(userInput, mood);
+      res.json(result);
+    } catch (error) {
+      console.error("Error analyzing music input:", error);
+      res.status(500).json({ error: "Failed to analyze music input" });
     }
   });
 
