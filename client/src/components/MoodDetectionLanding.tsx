@@ -409,7 +409,6 @@ export default function MoodDetectionLanding() {
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
           
           {analysisState === 'idle' ? (
-            /* Idle State - Calm and Inviting */}
             <div className="relative flex flex-col items-center justify-center text-center space-y-10">
               <div className="relative group">
                 {/* Gentle glow */}
@@ -427,7 +426,6 @@ export default function MoodDetectionLanding() {
               </div>
             </div>
           ) : (
-            /* Analyzing State - Gentle and Focused */}
             <div className="relative flex flex-col items-center justify-center text-center space-y-10">
               <div className="relative w-32 h-32">
                 {/* Soft pulsing glow */}
