@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { Mic, Loader2, Sparkles } from 'lucide-react';
+import { Mic, Loader2, Sparkles, Video, VideoOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMood } from '@/contexts/MoodContext';
+import * as faceapi from '@vladmandic/face-api';
 
 type AnalysisState = 'idle' | 'analyzing';
 
@@ -10,12 +11,42 @@ export default function MoodDetectionLanding() {
   const [, setLocation] = useLocation();
   const [analysisState, setAnalysisState] = useState<AnalysisState>('idle');
   const [transcript, setTranscript] = useState<string>('');
+  const [videoEnabled, setVideoEnabled] = useState(true);
+  const [modelsLoaded, setModelsLoaded] = useState(false);
   const { setMood, setConfidence } = useMood();
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  const analyzeVoice = async () => {
+  // Load face-api models on mount
+  useEffect(() => {
+    const loadModels = async () => {
+      try {
+        const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+          faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
+        ]);
+        setModelsLoaded(true);
+        console.log('Face-api models loaded successfully');
+      } catch (error) {
+        console.warn('Failed to load face-api models:', error);
+        setModelsLoaded(false);
+      }
+    };
+    loadModels();
+  }, []);
+
+  const analyzeVoiceAndVideo = async () => {
     try {
-      // Request microphone access
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Request microphone and camera access
+      const constraints = videoEnabled && modelsLoaded
+        ? { audio: true, video: { width: 720, height: 480, facingMode: 'user' } }
+        : { audio: true };
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints).catch((err) => {
+        console.warn('Camera access denied, falling back to voice-only:', err);
+        setVideoEnabled(false);
+        return navigator.mediaDevices.getUserMedia({ audio: true });
+      });
       
       setAnalysisState('analyzing');
       setTranscript('');
@@ -144,6 +175,53 @@ export default function MoodDetectionLanding() {
         voiceFeatures.samples++;
       }, 100);
 
+      // Setup video analysis if camera is available
+      const videoTrack = stream.getVideoTracks()[0];
+      const hasVideo = videoTrack && videoEnabled && modelsLoaded;
+      
+      const videoEmotions = {
+        happy: 0,
+        sad: 0,
+        angry: 0,
+        fearful: 0, // maps to anxious
+        disgusted: 0,
+        surprised: 0,
+        neutral: 0,
+        samples: 0
+      };
+
+      let faceAnalysisInterval: ReturnType<typeof setInterval> | null = null;
+
+      if (hasVideo && videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+
+        // Analyze facial expressions every 500ms
+        faceAnalysisInterval = setInterval(async () => {
+          if (videoRef.current) {
+            try {
+              const detections = await faceapi
+                .detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions())
+                .withFaceExpressions();
+
+              if (detections && detections.expressions) {
+                const expressions = detections.expressions;
+                videoEmotions.happy += expressions.happy || 0;
+                videoEmotions.sad += expressions.sad || 0;
+                videoEmotions.angry += expressions.angry || 0;
+                videoEmotions.fearful += expressions.fearful || 0;
+                videoEmotions.disgusted += expressions.disgusted || 0;
+                videoEmotions.surprised += expressions.surprised || 0;
+                videoEmotions.neutral += expressions.neutral || 0;
+                videoEmotions.samples++;
+              }
+            } catch (error) {
+              console.warn('Face detection error:', error);
+            }
+          }
+        }, 500);
+      }
+
       // Start speech recognition (runs for 18 seconds)
       const recognitionPromise = startRecognition().catch(err => {
         console.warn('Recognition failed:', err);
@@ -153,6 +231,7 @@ export default function MoodDetectionLanding() {
       // Analyze for 18 seconds
       setTimeout(async () => {
         clearInterval(analyzeInterval);
+        if (faceAnalysisInterval) clearInterval(faceAnalysisInterval);
         mediaRecorder.stop();
         
         // Stop all tracks
@@ -162,10 +241,23 @@ export default function MoodDetectionLanding() {
         // Wait for recognition to complete and get final transcript
         const { transcript: spokenText, hasTranscript } = await recognitionPromise;
 
-        // Calculate averages
+        // Calculate voice feature averages
         const avgVolume = voiceFeatures.avgVolume / voiceFeatures.samples;
         const avgPitch = voiceFeatures.avgPitch / voiceFeatures.samples;
         const avgEnergy = voiceFeatures.energy / voiceFeatures.samples;
+        const voiceConfidence = hasTranscript ? 0.85 : 0.6;
+
+        // Calculate video emotion averages
+        const avgVideoEmotions = videoEmotions.samples > 0 ? {
+          happy: videoEmotions.happy / videoEmotions.samples,
+          sad: videoEmotions.sad / videoEmotions.samples,
+          angry: videoEmotions.angry / videoEmotions.samples,
+          fearful: videoEmotions.fearful / videoEmotions.samples,
+          disgusted: videoEmotions.disgusted / videoEmotions.samples,
+          surprised: videoEmotions.surprised / videoEmotions.samples,
+          neutral: videoEmotions.neutral / videoEmotions.samples,
+        } : null;
+        const videoConfidence = videoEmotions.samples > 5 ? 0.75 : 0.3;
 
         // Build voice characteristics string
         const voiceCharacteristics = 
@@ -173,21 +265,26 @@ export default function MoodDetectionLanding() {
           `volume ${avgVolume.toFixed(0)} (${avgVolume > 100 ? 'loud' : avgVolume < 80 ? 'quiet' : 'normal'}), ` +
           `energy ${avgEnergy.toFixed(0)} (${avgEnergy > 3500 ? 'very energetic' : avgEnergy < 2000 ? 'low energy' : 'moderate'})`;
 
-        // Combine transcript with voice characteristics for comprehensive analysis
-        const analysisText = spokenText 
-          ? `${spokenText}. ${voiceCharacteristics}`
-          : voiceCharacteristics;
-
-        console.log('Sending to Gemini:', analysisText);
+        console.log('Video emotions:', avgVideoEmotions);
+        console.log('Voice features:', { avgPitch, avgVolume, avgEnergy });
 
         try {
-          // Send accumulated transcribed words or voice characteristics to Gemini
+          // Send both voice and video features for multimodal analysis
           const response = await fetch('/api/analyze-mood', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              text: analysisText,
-              hasTranscript
+              transcript: spokenText,
+              voiceFeatures: {
+                pitch: avgPitch,
+                volume: avgVolume,
+                energy: avgEnergy,
+                characteristics: voiceCharacteristics
+              },
+              voiceConfidence,
+              videoEmotions: avgVideoEmotions,
+              videoConfidence: avgVideoEmotions ? videoConfidence : 0,
+              hasVideo: !!avgVideoEmotions
             })
           });
 
@@ -315,47 +412,92 @@ export default function MoodDetectionLanding() {
           )}
         </div>
 
-        {/* Action Button */}
-        <div className="mt-12 flex justify-center">
+        {/* Video Preview (shown during analysis) */}
+        {analysisState === 'analyzing' && videoEnabled && (
+          <div className="mt-8 flex justify-center">
+            <div className="relative bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
+              <div className="absolute top-2 right-2 bg-purple-900/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs text-white font-medium flex items-center gap-2 z-10">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                Processing Locally
+              </div>
+              <video
+                ref={videoRef}
+                className="rounded-xl w-80 h-60 object-cover"
+                muted
+                playsInline
+                data-testid="video-preview"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="mt-12 flex flex-col items-center gap-4">
           <Button
-            onClick={analyzeVoice}
-            disabled={analysisState === 'analyzing'}
+            onClick={analyzeVoiceAndVideo}
+            disabled={analysisState === 'analyzing' || !modelsLoaded}
             size="lg"
             className={`relative h-18 px-16 text-xl font-semibold transition-all duration-300 rounded-2xl shadow-2xl overflow-hidden group ${
-              analysisState === 'analyzing'
+              analysisState === 'analyzing' || !modelsLoaded
                 ? 'bg-purple-900/50 cursor-not-allowed'
                 : 'bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 hover:from-pink-500 hover:via-purple-500 hover:to-indigo-500 hover:scale-105 active:scale-95 hover:shadow-pink-500/50'
             }`}
             data-testid="button-analyze-voice"
           >
             {/* Button glow effect */}
-            {analysisState === 'idle' && (
+            {analysisState === 'idle' && modelsLoaded && (
               <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-400 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300" />
             )}
             
             <span className="relative flex items-center gap-3">
-              {analysisState === 'analyzing' ? (
+              {!modelsLoaded ? (
+                <>
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  Loading AI models...
+                </>
+              ) : analysisState === 'analyzing' ? (
                 <>
                   <Loader2 className="w-6 h-6 animate-spin" />
                   Analyzing...
                 </>
               ) : (
                 <>
-                  <Mic className="w-6 h-6 group-hover:animate-pulse" />
-                  Start Voice Analysis
+                  {videoEnabled ? <Video className="w-6 h-6 group-hover:animate-pulse" /> : <Mic className="w-6 h-6 group-hover:animate-pulse" />}
+                  Start {videoEnabled ? 'Video + Voice' : 'Voice'} Analysis
                 </>
               )}
             </span>
           </Button>
+
+          {/* Camera Toggle */}
+          {modelsLoaded && analysisState === 'idle' && (
+            <button
+              onClick={() => setVideoEnabled(!videoEnabled)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-purple-200 hover:text-white transition-all duration-200"
+              data-testid="button-toggle-camera"
+            >
+              {videoEnabled ? (
+                <>
+                  <Video className="w-4 h-4" />
+                  <span className="text-sm">Camera Enabled</span>
+                </>
+              ) : (
+                <>
+                  <VideoOff className="w-4 h-4" />
+                  <span className="text-sm">Voice Only</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
 
         {/* Info Text */}
         <div className="mt-8 text-center space-y-2">
           <p className="text-purple-200 text-base font-light">
-            You'll be prompted to allow microphone access.
+            {videoEnabled ? 'Camera and microphone access required.' : 'Microphone access required.'}
           </p>
           <p className="text-purple-300 text-sm font-light">
-            Speak naturally for 10 seconds - our AI analyzes the words you say and your voice tone
+            Speak naturally for 18 seconds - {videoEnabled ? 'our AI analyzes your facial expressions, words, and voice tone' : 'our AI analyzes the words you say and your voice tone'}
           </p>
         </div>
         </div>
