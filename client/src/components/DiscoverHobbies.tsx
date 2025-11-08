@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Palette, Music, BookOpen, Camera, Dumbbell, TreePine, Home, Sparkles, Send, ExternalLink, Search } from 'lucide-react';
+import { Palette, Music, BookOpen, Camera, Dumbbell, TreePine, Home, Sparkles, Send, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -208,7 +208,6 @@ export default function DiscoverHobbies() {
   const [selectedHobby, setSelectedHobby] = useState<Hobby | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
   
   const currentMood = mood || 'calm';
 
@@ -223,52 +222,11 @@ export default function DiscoverHobbies() {
     setUserInput('');
   };
 
-  const getSmartFallbackResponse = (hobby: Hobby, question: string): string => {
-    const lowerQuestion = question.toLowerCase();
-    
-    // Materials/Equipment questions
-    if (lowerQuestion.includes('material') || lowerQuestion.includes('equipment') || lowerQuestion.includes('need') || lowerQuestion.includes('buy')) {
-      const materialResponses: Record<string, string> = {
-        'Watercolor Painting': 'For watercolor painting, start with just 3 essentials: a basic watercolor set (12-24 colors), watercolor paper (140lb/300gsm), and a few round brushes (sizes 4, 8, and 12). You can find beginner sets for $20-30. Check out the YouTube tutorials I shared - they show exactly what materials to get!',
-        'Music Composition': 'You can start music composition with just your computer! Free software like GarageBand (Mac) or Audacity (Windows/Mac) work great. If you want a MIDI keyboard, basic ones start around $50-100. The tutorials I shared walk you through using free software to create your first composition.',
-        'Mindful Journaling': 'All you need is a notebook and pen! Any notebook works - lined, dotted, or blank. Many people enjoy hardcover journals ($10-20) but a simple notebook is perfect to start. The YouTube videos I linked show various journaling setups and techniques.',
-        'Nature Photography': 'Your smartphone camera is perfect to start! No need for expensive equipment. If you want to upgrade later, consider a used DSLR ($200-400). Focus on learning composition and lighting first - the tutorials show how to get amazing photos with just a phone.',
-        'Dance Movement': 'No equipment needed! Just comfortable clothing you can move in and a small space (10x10 feet works). Optional: bluetooth speaker for music ($20-50). The video tutorials I shared guide you through movements you can do at home.',
-        'Forest Bathing': 'No special equipment required! Wear comfortable walking shoes and weather-appropriate clothing. Optional: a water bottle and maybe a small notebook to jot down observations. The guides I linked explain the practice in detail.'
-      };
-      return materialResponses[hobby.name] || `Great question! For ${hobby.name}, the YouTube tutorials I've shared have detailed equipment guides. They'll show you exactly what you need to get started as a beginner!`;
-    }
-    
-    // Time/Duration questions
-    if (lowerQuestion.includes('how long') || lowerQuestion.includes('time') || lowerQuestion.includes('minutes') || lowerQuestion.includes('hour')) {
-      return `For ${hobby.name}, you can start with just 15-30 minutes a session! Consistency matters more than duration. Many beginners practice 2-3 times per week. Check out the tutorials I shared - they're designed for beginners and show realistic practice sessions.`;
-    }
-    
-    // Difficulty/Beginner questions
-    if (lowerQuestion.includes('difficult') || lowerQuestion.includes('hard') || lowerQuestion.includes('easy') || lowerQuestion.includes('beginner')) {
-      return `${hobby.name} is ${hobby.difficulty}-level! Don't worry though - everyone starts somewhere. The beauty of this hobby is you can start enjoying it from day one. The YouTube tutorials I've linked are specifically designed for complete beginners and break everything down step-by-step.`;
-    }
-    
-    // Benefits questions
-    if (lowerQuestion.includes('benefit') || lowerQuestion.includes('help') || lowerQuestion.includes('good for')) {
-      return `${hobby.name} is wonderful for emotional well-being! It helps with ${hobby.recommendedFor.join(', ')} moods. ${hobby.description} The practice offers mindfulness, creative expression, and stress relief. The videos I shared explain the mental health benefits in detail!`;
-    }
-    
-    // Where to start questions
-    if (lowerQuestion.includes('start') || lowerQuestion.includes('begin') || lowerQuestion.includes('first')) {
-      return `Perfect question! To start ${hobby.name}, I recommend watching the first YouTube tutorial I shared - it's specifically designed for complete beginners. It'll walk you through your very first session step-by-step. Then just give it a try! Start small and be patient with yourself.`;
-    }
-    
-    // Default helpful fallback
-    return `That's a great question about ${hobby.name}! While I'm experiencing some technical difficulties right now, the YouTube tutorials I've shared are incredibly comprehensive. They cover everything from getting started, materials needed, techniques, and common beginner questions. I highly recommend watching the first one - it's perfect for beginners!`;
-  };
-
   const sendMessage = async () => {
     if (!userInput.trim() || !selectedHobby) return;
 
     const newUserMessage: ChatMessage = { role: 'user', content: userInput };
     setChatMessages(prev => [...prev, newUserMessage]);
-    const currentQuestion = userInput;
     setUserInput('');
 
     try {
@@ -277,7 +235,7 @@ export default function DiscoverHobbies() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           hobbyName: selectedHobby.name,
-          question: currentQuestion,
+          question: userInput,
           mood: currentMood
         })
       });
@@ -293,7 +251,7 @@ export default function DiscoverHobbies() {
       console.error('Error in hobby chat:', error);
       const aiMessage: ChatMessage = { 
         role: 'assistant', 
-        content: getSmartFallbackResponse(selectedHobby, currentQuestion)
+        content: `That's a great question about ${selectedHobby.name}! I'd recommend checking out the YouTube tutorials I've shared - they cover most beginner questions in detail.`
       };
       setChatMessages(prev => [...prev, aiMessage]);
     }
@@ -301,10 +259,7 @@ export default function DiscoverHobbies() {
   
   const filteredHobbies = hobbies.filter((hobby) => {
     const matchesFilter = filter === 'all' || hobby.category === filter;
-    const matchesSearch = searchQuery === '' || 
-      hobby.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      hobby.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
+    return matchesFilter;
   });
 
   const recommendedHobbies = filteredHobbies.filter((hobby) =>
@@ -319,23 +274,10 @@ export default function DiscoverHobbies() {
     <div className="min-h-screen bg-background mood-transition">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-display font-bold mb-2">Try with AI</h1>
+          <h1 className="text-4xl font-display font-bold mb-2">Try New with AI</h1>
           <p className="text-muted-foreground">
-            Discover new creative activities with AI-powered guidance tailored to your mood
+            Discover new creative activities tailored to your mood
           </p>
-        </div>
-
-        <div className="mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search hobbies..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              data-testid="input-search-hobbies"
-            />
-          </div>
         </div>
 
         <div className="mb-8">
