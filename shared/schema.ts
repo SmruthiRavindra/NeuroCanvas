@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, boolean, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -7,14 +7,40 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  email: text("email"),
+  phone: text("phone"),
+  
+  // Guardian details
+  guardianName: text("guardian_name"),
+  guardianPhone: text("guardian_phone"),
+  guardianRelationship: text("guardian_relationship"),
+  
+  // User personality and interests
+  personality: text("personality"),
+  interests: text("interests"),
+  
+  // Onboarding status
+  hasCompletedGuardianSetup: boolean("has_completed_guardian_setup").default(false),
+  hasCompletedOnboarding: boolean("has_completed_onboarding").default(false),
+  
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  hasCompletedGuardianSetup: true,
+  hasCompletedOnboarding: true,
 });
+
+export const updateUserSchema = createInsertSchema(users).omit({
+  id: true,
+  password: true,
+  createdAt: true,
+}).partial();
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpdateUser = z.infer<typeof updateUserSchema>;
 export type User = typeof users.$inferSelect;
 
 export const journalEntries = pgTable("journal_entries", {
@@ -32,6 +58,24 @@ export const insertJournalEntrySchema = createInsertSchema(journalEntries).omit(
 
 export type InsertJournalEntry = z.infer<typeof insertJournalEntrySchema>;
 export type JournalEntry = typeof journalEntries.$inferSelect;
+
+// Mood history tracking for guardian alerts
+export const moodHistory = pgTable("mood_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  mood: text("mood").notNull(),
+  confidence: integer("confidence").notNull(),
+  detectionSource: text("detection_source"), // 'voice', 'video', 'multimodal'
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
+export const insertMoodHistorySchema = createInsertSchema(moodHistory).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertMoodHistory = z.infer<typeof insertMoodHistorySchema>;
+export type MoodHistory = typeof moodHistory.$inferSelect;
 
 // Voice Persona schema for music/singing generation
 export type VoicePersona = {
