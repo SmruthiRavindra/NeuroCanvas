@@ -1,0 +1,43 @@
+Create a new React component called MoodDetector.jsx. This component will have two states: 'idle' and 'analyzing'.
+
+Create the State: Use useState to create a state variable called status, with a default value of 'idle'.
+
+Create the "Idle" UI (the "before" state):
+
+When status is 'idle', display the main UI.
+
+It needs a title: "Detect Your Mood".
+
+It needs a subtitle: "Use your camera to capture your expression, or your microphone to analyze your tone. The AI will analyze your mood."
+
+Show a large, dark container. Inside this container, show a "Camera is off" icon and the text "Click a button to start detection."
+
+Below the container, show two buttons:
+
+A bright pink button with a camera icon that says "Analyze Face".
+
+A dark purple button with a soundwave icon that says "Analyze Voice Only".
+
+Create the "Analyzing" UI (the "after" state):
+
+When the user clicks the "Analyze Face" button, set the status to 'analyzing'.
+
+Add Webcam Functionality:
+
+When the status changes to 'analyzing', you must immediately request webcam access using navigator.mediaDevices.getUserMedia({ video: true }).
+
+Get the video stream and display it inside the large container. (Use a <video> tag with autoPlay and muted). This is the "self-view preview".
+
+Add the "Analyzing" Overlay:
+
+While the status is 'analyzing', display an overlay on top of the live video.
+
+This overlay must have a magenta loading spinner and the text "Analyzing your expression...".
+
+Change the Button States:
+
+While status is 'analyzing', the "Analyze Face" button must change. It should become dark purple, be disabled, and show its own small spinner with the text "Analyzing...".
+
+The "Analyze Voice Only" button should also be disabled.
+
+Styling: Use CSS (or styled-components) to create the overall dark mode theme (dark purple background, light text) and the specific pink/magenta accent colors for the buttons and spinners, just like in the screenshots. Use conditional rendering (e.g., {status === 'idle' ? ... : ...}) to show/hide the different UI elements.
