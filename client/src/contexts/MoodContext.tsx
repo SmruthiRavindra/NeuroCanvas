@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-type Mood = 'calm' | 'energetic' | 'sad' | 'anxious' | 'happy' | 'stressed' | 'peaceful' | 'angry' | 'confused' | 'excited' | 'melancholic' | 'confident' | null;
+type Mood = 'calm' | 'energetic' | 'sad' | 'anxious' | 'happy' | 'stressed' | 'peaceful' | 'angry' | 'confused' | 'excited' | 'melancholic' | 'confident' | 'blissful' | 'lonely' | 'hopeful' | 'overwhelmed' | null;
 
 interface MoodContextType {
   mood: Mood;

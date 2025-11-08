@@ -358,6 +358,70 @@
   --muted: 193 42% 22%;
 }
 
+:root[data-mood="blissful"] {
+  --primary: 280 95% 65%;
+  --accent: 285 85% 95%;
+  --background: 285 75% 98%;
+  --card: 282 65% 99%;
+  --muted: 285 60% 92%;
+}
+
+.dark[data-mood="blissful"] {
+  --primary: 280 90% 70%;
+  --accent: 278 60% 28%;
+  --background: 285 45% 12%;
+  --card: 282 40% 16%;
+  --muted: 280 48% 25%;
+}
+
+:root[data-mood="lonely"] {
+  --primary: 240 25% 48%;
+  --accent: 238 22% 88%;
+  --background: 240 18% 95%;
+  --card: 239 15% 97%;
+  --muted: 240 20% 84%;
+}
+
+.dark[data-mood="lonely"] {
+  --primary: 240 30% 56%;
+  --accent: 238 22% 21%;
+  --background: 242 22% 9%;
+  --card: 240 20% 13%;
+  --muted: 239 24% 19%;
+}
+
+:root[data-mood="hopeful"] {
+  --primary: 175 80% 52%;
+  --accent: 172 70% 93%;
+  --background: 170 60% 97%;
+  --card: 173 55% 99%;
+  --muted: 172 50% 90%;
+}
+
+.dark[data-mood="hopeful"] {
+  --primary: 175 75% 60%;
+  --accent: 172 48% 25%;
+  --background: 178 42% 11%;
+  --card: 175 38% 15%;
+  --muted: 173 44% 23%;
+}
+
+:root[data-mood="overwhelmed"] {
+  --primary: 15 75% 54%;
+  --accent: 18 70% 91%;
+  --background: 15 45% 96%;
+  --card: 16 40% 98%;
+  --muted: 15 50% 87%;
+}
+
+.dark[data-mood="overwhelmed"] {
+  --primary: 15 70% 62%;
+  --accent: 14 48% 24%;
+  --background: 12 32% 10%;
+  --card: 14 30% 14%;
+  --muted: 15 38% 21%;
+}
+
 @layer base {
   * {
     @apply border-border;
