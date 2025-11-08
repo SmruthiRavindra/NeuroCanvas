@@ -209,28 +209,35 @@ export default function MoodDetectionLanding() {
       let faceAnalysisInterval: ReturnType<typeof setInterval> | null = null;
 
       if (actuallyHasVideo) {
-        console.log('Setting up video stream and facial analysis');
+        console.log('📹 Setting up video stream and facial analysis');
         
         // Wait for React to render the video element
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 200));
         
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           
-          // Wait for video to be ready
+          // Wait for video to be ready with proper loading
           try {
             await videoRef.current.play();
-            console.log('Video playing, starting facial expression detection');
+            // Wait a bit more for the video to stabilize
+            await new Promise(resolve => setTimeout(resolve, 500));
+            console.log('✓ Video playing and ready for analysis');
           } catch (playError) {
-            console.warn('Video play failed:', playError);
+            console.warn('✗ Video play failed:', playError);
           }
 
-          // Analyze facial expressions every 500ms
+          // Analyze facial expressions every 500ms with more lenient detection
+          const detectionOptions = new faceapi.TinyFaceDetectorOptions({ 
+            inputSize: 416, // Higher resolution for better detection
+            scoreThreshold: 0.3 // More lenient threshold
+          });
+
           faceAnalysisInterval = setInterval(async () => {
             if (videoRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
               try {
                 const detections = await faceapi
-                  .detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions())
+                  .detectSingleFace(videoRef.current, detectionOptions)
                   .withFaceExpressions();
 
                 if (detections && detections.expressions) {
@@ -243,20 +250,29 @@ export default function MoodDetectionLanding() {
                   videoEmotions.surprised += expressions.surprised || 0;
                   videoEmotions.neutral += expressions.neutral || 0;
                   videoEmotions.samples++;
-                  console.log('Face detected! Sample #' + videoEmotions.samples, expressions);
-                } else {
-                  console.log('No face detected in frame');
+                  if (videoEmotions.samples % 5 === 0) {
+                    const topEmotion = Math.max(expressions.happy, expressions.sad, expressions.angry, expressions.fearful, expressions.disgusted, expressions.surprised, expressions.neutral);
+                    const emotionName = topEmotion === expressions.happy ? 'happy' : 
+                                        topEmotion === expressions.sad ? 'sad' :
+                                        topEmotion === expressions.angry ? 'angry' :
+                                        topEmotion === expressions.fearful ? 'fearful' :
+                                        topEmotion === expressions.disgusted ? 'disgusted' :
+                                        topEmotion === expressions.surprised ? 'surprised' : 'neutral';
+                    console.log(`✓ Face sample #${videoEmotions.samples} - Top emotion: ${emotionName}`);
+                  }
                 }
               } catch (error) {
-                console.warn('Face detection error:', error);
+                // Silently continue on errors - don't spam console
               }
             }
           }, 500);
+          
+          console.log('🎯 Facial expression detection active - make sure your face is visible!');
         } else {
-          console.warn('Video ref not available after waiting');
+          console.warn('✗ Video ref not available after waiting');
         }
       } else {
-        console.log('Video analysis skipped - actuallyHasVideo:', actuallyHasVideo);
+        console.log('ℹ️ Video analysis skipped - using voice-only mode');
       }
 
       // Start speech recognition (runs for 18 seconds)
@@ -294,7 +310,11 @@ export default function MoodDetectionLanding() {
           surprised: videoEmotions.surprised / videoEmotions.samples,
           neutral: videoEmotions.neutral / videoEmotions.samples,
         } : null;
-        const videoConfidence = videoEmotions.samples > 5 ? 0.75 : 0.3;
+        
+        // Adjust confidence based on sample count
+        const videoConfidence = videoEmotions.samples >= 20 ? 0.75 : 
+                                videoEmotions.samples >= 10 ? 0.60 : 
+                                videoEmotions.samples >= 5 ? 0.45 : 0.30;
 
         // Build voice characteristics string
         const voiceCharacteristics = 
@@ -302,8 +322,11 @@ export default function MoodDetectionLanding() {
           `volume ${avgVolume.toFixed(0)} (${avgVolume > 100 ? 'loud' : avgVolume < 80 ? 'quiet' : 'normal'}), ` +
           `energy ${avgEnergy.toFixed(0)} (${avgEnergy > 3500 ? 'very energetic' : avgEnergy < 2000 ? 'low energy' : 'moderate'})`;
 
-        console.log('Video emotions:', avgVideoEmotions);
-        console.log('Voice features:', { avgPitch, avgVolume, avgEnergy });
+        console.log('📊 Analysis Summary:');
+        console.log('  - Face samples collected:', videoEmotions.samples);
+        console.log('  - Video emotions:', avgVideoEmotions);
+        console.log('  - Voice features:', { avgPitch, avgVolume, avgEnergy });
+        console.log('  - Transcript:', spokenText || '(none)');
 
         try {
           // Send both voice and video features for multimodal analysis
