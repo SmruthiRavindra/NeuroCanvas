@@ -37,7 +37,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Helper function to fuse video and voice moods
+  // Helper function to fuse video and voice moods with 60/40 baseline weighting
   function fuseMultimodalMood(
     voiceResult: any,
     videoEmotions: any,
@@ -47,24 +47,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Map face-api emotions to NeuroCanvas moods
     const videoMood = mapVideoEmotionsToMood(videoEmotions);
     
-    // Weight by confidence
-    const totalConf = voiceConf + videoConf;
-    const voiceWeight = voiceConf / totalConf;
-    const videoWeight = videoConf / totalConf;
+    // Enforce 60/40 baseline weighting (voice priority)
+    const baselineVoiceWeight = 0.60;
+    const baselineVideoWeight = 0.40;
+    
+    // Adjust weights based on confidence (but maintain voice priority)
+    const confidenceAdjustment = (voiceConf - videoConf) * 0.1;
+    const voiceWeight = Math.max(0.5, Math.min(0.75, baselineVoiceWeight + confidenceAdjustment));
+    const videoWeight = 1 - voiceWeight;
 
-    // If both agree or have similar moods, boost confidence
+    // If both agree on mood, boost confidence
     const moodsAgree = voiceResult.mood === videoMood.mood;
+    const blendedConfidence = (voiceResult.confidence * voiceWeight) + (videoMood.confidence * videoWeight);
     const finalConfidence = moodsAgree
-      ? Math.min(95, voiceResult.confidence * 1.15)
-      : (voiceResult.confidence * voiceWeight + videoMood.confidence * videoWeight);
+      ? Math.min(95, blendedConfidence * 1.15)
+      : blendedConfidence;
 
-    // Prefer voice mood if it has higher weight, otherwise blend
-    const finalMood = voiceWeight > 0.6 ? voiceResult.mood : videoMood.mood;
+    // Voice mood takes priority unless video has very high confidence and disagrees
+    const finalMood = (videoConf > 0.85 && videoMood.confidence > 85 && !moodsAgree)
+      ? videoMood.mood
+      : voiceResult.mood;
 
     return {
       mood: finalMood,
       confidence: Math.round(finalConfidence),
-      reasoning: `Combined analysis (voice ${Math.round(voiceWeight * 100)}%, video ${Math.round(videoWeight * 100)}%): ${voiceResult.reasoning}`,
+      reasoning: `Multimodal fusion (voice ${Math.round(voiceWeight * 100)}%, video ${Math.round(videoWeight * 100)}%): Voice detected ${voiceResult.mood}, video detected ${videoMood.mood}`,
       apiSource: voiceResult.apiSource,
       videoDetected: true
     };

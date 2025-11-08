@@ -435,35 +435,30 @@ export default function MoodDetectionLanding() {
         <div className="mt-12 flex flex-col items-center gap-4">
           <Button
             onClick={analyzeVoiceAndVideo}
-            disabled={analysisState === 'analyzing' || !modelsLoaded}
+            disabled={analysisState === 'analyzing'}
             size="lg"
             className={`relative h-18 px-16 text-xl font-semibold transition-all duration-300 rounded-2xl shadow-2xl overflow-hidden group ${
-              analysisState === 'analyzing' || !modelsLoaded
+              analysisState === 'analyzing'
                 ? 'bg-purple-900/50 cursor-not-allowed'
                 : 'bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 hover:from-pink-500 hover:via-purple-500 hover:to-indigo-500 hover:scale-105 active:scale-95 hover:shadow-pink-500/50'
             }`}
             data-testid="button-analyze-voice"
           >
             {/* Button glow effect */}
-            {analysisState === 'idle' && modelsLoaded && (
+            {analysisState === 'idle' && (
               <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-400 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300" />
             )}
             
             <span className="relative flex items-center gap-3">
-              {!modelsLoaded ? (
-                <>
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                  Loading AI models...
-                </>
-              ) : analysisState === 'analyzing' ? (
+              {analysisState === 'analyzing' ? (
                 <>
                   <Loader2 className="w-6 h-6 animate-spin" />
                   Analyzing...
                 </>
               ) : (
                 <>
-                  {videoEnabled ? <Video className="w-6 h-6 group-hover:animate-pulse" /> : <Mic className="w-6 h-6 group-hover:animate-pulse" />}
-                  Start {videoEnabled ? 'Video + Voice' : 'Voice'} Analysis
+                  {videoEnabled && modelsLoaded ? <Video className="w-6 h-6 group-hover:animate-pulse" /> : <Mic className="w-6 h-6 group-hover:animate-pulse" />}
+                  Start {videoEnabled && modelsLoaded ? 'Video + Voice' : 'Voice'} Analysis
                 </>
               )}
             </span>
