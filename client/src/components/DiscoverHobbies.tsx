@@ -274,9 +274,9 @@ export default function DiscoverHobbies() {
     <div className="min-h-screen bg-background mood-transition">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-display font-bold mb-2">Try New with AI</h1>
+          <h1 className="text-4xl font-display font-bold mb-2">Discover Hobbies</h1>
           <p className="text-muted-foreground">
-            Discover new creative activities tailored to your mood
+            Try new creative activities tailored to your mood
           </p>
         </div>
 
