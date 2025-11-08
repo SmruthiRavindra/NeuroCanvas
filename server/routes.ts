@@ -131,6 +131,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Voice synthesis endpoint (placeholder for future enhancement)
+  app.post("/api/generate-audio", async (req, res) => {
+    try {
+      const { prompt, personaId, compositionType } = req.body;
+      if (!prompt || !personaId) {
+        return res.status(400).json({ error: "Prompt and personaId are required" });
+      }
+
+      // Validate persona exists
+      const persona = await storage.getVoicePersona(personaId);
+      if (!persona) {
+        return res.status(404).json({ error: "Persona not found" });
+      }
+
+      // Placeholder response - in future this would call a TTS/music generation service
+      res.json({
+        success: true,
+        message: `Voice synthesis for ${persona.displayName} is coming soon!`,
+        persona: persona.displayName,
+        prompt,
+        compositionType,
+        // In future, this would include: audioUrl, duration, etc.
+      });
+    } catch (error) {
+      console.error("Error generating audio:", error);
+      res.status(500).json({ error: "Failed to generate audio" });
+    }
+  });
+
   // Hobby chat endpoint
   app.post("/api/hobby-chat", async (req, res) => {
     try {
