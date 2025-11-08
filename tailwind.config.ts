@@ -83,10 +83,12 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
+        sans: ["Nunito", "Outfit", "sans-serif"],
+        heading: ["Poppins", "Inter", "sans-serif"],
+        body: ["Nunito", "Outfit", "sans-serif"],
         display: ["Poppins", "sans-serif"],
-        serif: ["var(--font-serif)"],
-        mono: ["var(--font-mono)"],
+        serif: ["Georgia", "serif"],
+        mono: ["Menlo", "monospace"],
       },
       keyframes: {
         "accordion-down": {

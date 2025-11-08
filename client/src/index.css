@@ -1,425 +1,275 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;600;700&family=Nunito:wght@300;400;600;700&family=Outfit:wght@300;400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* LIGHT MODE - Vibrant & Colorful */
+/* CALM, CREATIVE, EMOTIONALLY INTELLIGENT DESIGN SYSTEM */
 :root {
-  --button-outline: rgba(0,0,0, .10);
-  --badge-outline: rgba(0,0,0, .05);
-  --opaque-button-border-intensity: -8;
-  --elevate-1: rgba(0,0,0, .03);
-  --elevate-2: rgba(0,0,0, .08);
-  --background: 208deg 100% 97.06%;
-  --foreground: 215.17deg 50% 22.75%;
-  --border: 270 30% 85%;
-  --card: 0 0% 100%;
-  --card-foreground: 270 30% 15%;
-  --card-border: 270 20% 90%;
-  --sidebar: 280 60% 97%;
-  --sidebar-foreground: 270 30% 15%;
-  --sidebar-border: 270 30% 88%;
-  --sidebar-primary: 280 80% 55%;
+  /* Elevation & Interaction System */
+  --button-outline: rgba(0,0,0, .06);
+  --badge-outline: rgba(0,0,0, .04);
+  --opaque-button-border-intensity: -6;
+  --elevate-1: rgba(0,0,0, .02);
+  --elevate-2: rgba(0,0,0, .06);
+  
+  /* Base Neutrals - Soft & Calming */
+  --background: 30 20% 98%;          /* Off-white #FAFAF9 */
+  --foreground: 0 0% 18%;             /* Charcoal #2D2D2D */
+  
+  --card: 30 25% 96%;                 /* Blush beige #F5F1ED */
+  --card-foreground: 0 0% 18%;
+  --card-border: 220 15% 88%;         /* Pastel blue-gray */
+  
+  --border: 220 15% 90%;              /* Pastel blue-gray #E0E4E8 */
+  --input: 220 15% 88%;
+  
+  /* Sidebar - Soft glassmorphic */
+  --sidebar: 30 25% 97%;
+  --sidebar-foreground: 0 0% 18%;
+  --sidebar-border: 220 15% 88%;
+  --sidebar-primary: 280 35% 65%;     /* Muted lavender */
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 270 50% 92%;
-  --sidebar-accent-foreground: 270 30% 15%;
-  --sidebar-ring: 280 80% 55%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 270 30% 15%;
-  --popover-border: 270 30% 85%;
-  --primary: 280deg 85.15% 55.1%;
-  --primary-foreground: 0deg 0% 100%;
-  --secondary: 105deg 54.55% 95.69%;
-  --secondary-foreground: 215.17deg 50% 22.75%;
-  --muted: 220deg 21.43% 94.51%;
-  --muted-foreground: 208.24deg 7.3% 45.69%;
-  --accent: 199.59deg 80.33% 88.04%;
-  --accent-foreground: 200 70% 25%;
-  --destructive: 0 85% 60%;
+  --sidebar-accent: 220 20% 94%;
+  --sidebar-accent-foreground: 0 0% 18%;
+  --sidebar-ring: 280 35% 65%;
+  
+  /* Popover */
+  --popover: 30 25% 97%;
+  --popover-foreground: 0 0% 18%;
+  --popover-border: 220 15% 88%;
+  
+  /* Primary - Muted Lavender (creative) */
+  --primary: 280 35% 65%;             /* #C5A3D9 */
+  --primary-foreground: 0 0% 100%;
+  
+  /* Secondary - Blush beige elevated */
+  --secondary: 30 20% 92%;
+  --secondary-foreground: 0 0% 18%;
+  
+  /* Muted - Soft neutral */
+  --muted: 220 15% 94%;
+  --muted-foreground: 0 0% 42%;       /* Muted gray #6B6B6B */
+  
+  /* Accent - Pastel blue-gray */
+  --accent: 220 20% 90%;
+  --accent-foreground: 220 40% 25%;
+  
+  /* Destructive - Soft coral */
+  --destructive: 5 65% 62%;
   --destructive-foreground: 0 0% 100%;
-  --input: 270 30% 82%;
-  --ring: 280 85% 55%;
-  --chart-1: 280 85% 55%;
-  --chart-2: 200 80% 55%;
-  --chart-3: 160 70% 50%;
-  --chart-4: 40 90% 55%;
-  --chart-5: 10 85% 65%;
-  --font-sans: Inter, sans-serif;
-  --font-serif: Georgia, serif;
-  --font-mono: Menlo, monospace;
-  --radius: .5rem;
-  --shadow-2xs: 0px 2px 0px 0px hsl(240 5% 10% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(240 5% 10% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(240 5% 10% / 0.00), 0px 1px 2px -1px hsl(240 5% 10% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(240 5% 10% / 0.00), 0px 1px 2px -1px hsl(240 5% 10% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(240 5% 10% / 0.00), 0px 2px 4px -1px hsl(240 5% 10% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(240 5% 10% / 0.00), 0px 4px 6px -1px hsl(240 5% 10% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(240 5% 10% / 0.00), 0px 8px 10px -1px hsl(240 5% 10% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(240 5% 10% / 0.00);
-  --tracking-normal: 0em;
+  
+  /* Ring & Shadows */
+  --ring: 280 35% 65%;
+  --radius: 1rem;
+  
+  /* Soft Shadows (glassmorphism) */
+  --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.03);
+  --shadow-xs: 0px 1px 3px 0px hsl(0 0% 0% / 0.04);
+  --shadow-sm: 0px 2px 4px -1px hsl(0 0% 0% / 0.04);
+  --shadow: 0px 4px 8px -2px hsl(0 0% 0% / 0.06);
+  --shadow-md: 0px 6px 12px -2px hsl(0 0% 0% / 0.08);
+  --shadow-lg: 0px 10px 24px -4px hsl(0 0% 0% / 0.10);
+  --shadow-xl: 0px 20px 40px -8px hsl(0 0% 0% / 0.12);
+  --shadow-2xl: 0px 30px 60px -12px hsl(0 0% 0% / 0.14);
+  
+  /* Typography */
+  --font-heading: 'Poppins', 'Inter', sans-serif;
+  --font-body: 'Nunito', 'Outfit', sans-serif;
+  --font-sans: 'Nunito', 'Outfit', sans-serif;
+  
+  /* Spacing */
   --spacing: 0.25rem;
+  --tracking-normal: -0.01em;
 
-/* Fallback for older browsers */
+  /* Border calculations */
   --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
 .dark {
-  --button-outline: rgba(255,255,255, .10);
+  --button-outline: rgba(255,255,255, .08);
   --badge-outline: rgba(255,255,255, .05);
-  --opaque-button-border-intensity: 9;
-  --elevate-1: rgba(255,255,255, .04);
-  --elevate-2: rgba(255,255,255, .09);
-  --background: 270 50% 10%;
-  --foreground: 270 30% 95%;
-  --border: 270 30% 25%;
-  --card: 270 40% 14%;
-  --card-foreground: 270 30% 95%;
-  --card-border: 270 35% 20%;
-  --sidebar: 270 45% 12%;
-  --sidebar-foreground: 270 30% 95%;
-  --sidebar-border: 270 35% 20%;
-  --sidebar-primary: 280 75% 60%;
+  --opaque-button-border-intensity: 8;
+  --elevate-1: rgba(255,255,255, .03);
+  --elevate-2: rgba(255,255,255, .07);
+  
+  --background: 0 0% 8%;              /* Deep charcoal */
+  --foreground: 30 15% 92%;           /* Soft off-white */
+  
+  --card: 0 0% 12%;
+  --card-foreground: 30 15% 92%;
+  --card-border: 220 10% 20%;
+  
+  --border: 220 10% 22%;
+  --input: 220 10% 24%;
+  
+  --sidebar: 0 0% 10%;
+  --sidebar-foreground: 30 15% 92%;
+  --sidebar-border: 220 10% 20%;
+  --sidebar-primary: 280 40% 70%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 270 35% 24%;
-  --sidebar-accent-foreground: 270 30% 95%;
-  --sidebar-ring: 280 75% 60%;
-  --popover: 270 40% 16%;
-  --popover-foreground: 270 30% 95%;
-  --popover-border: 270 35% 24%;
-  --primary: 280 80% 60%;
+  --sidebar-accent: 220 15% 18%;
+  --sidebar-accent-foreground: 30 15% 92%;
+  --sidebar-ring: 280 40% 70%;
+  
+  --popover: 0 0% 12%;
+  --popover-foreground: 30 15% 92%;
+  --popover-border: 220 10% 22%;
+  
+  --primary: 280 40% 70%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 320 60% 30%;
-  --secondary-foreground: 320 30% 95%;
-  --muted: 260 30% 26%;
-  --muted-foreground: 260 20% 70%;
-  --accent: 200 70% 28%;
-  --accent-foreground: 200 60% 90%;
-  --destructive: 0 80% 65%;
+  
+  --secondary: 220 15% 20%;
+  --secondary-foreground: 30 15% 92%;
+  
+  --muted: 220 10% 24%;
+  --muted-foreground: 0 0% 65%;
+  
+  --accent: 220 20% 28%;
+  --accent-foreground: 220 30% 88%;
+  
+  --destructive: 5 70% 68%;
   --destructive-foreground: 0 0% 100%;
-  --input: 270 35% 30%;
-  --ring: 280 80% 60%;
-  --chart-1: 280 80% 65%;
-  --chart-2: 220 70% 65%;
-  --chart-3: 173 58% 60%;
-  --chart-4: 43 74% 65%;
-  --chart-5: 27 87% 67%;
-  --shadow-2xs: 0px 2px 0px 0px hsl(240 5% 96% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(240 5% 96% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(240 5% 96% / 0.00), 0px 1px 2px -1px hsl(240 5% 96% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(240 5% 96% / 0.00), 0px 1px 2px -1px hsl(240 5% 96% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(240 5% 96% / 0.00), 0px 2px 4px -1px hsl(240 5% 96% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(240 5% 96% / 0.00), 0px 4px 6px -1px hsl(240 5% 96% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(240 5% 96% / 0.00), 0px 8px 10px -1px hsl(240 5% 96% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(240 5% 96% / 0.00);
+  
+  --ring: 280 40% 70%;
+  
+  --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.20);
+  --shadow-xs: 0px 1px 3px 0px hsl(0 0% 0% / 0.24);
+  --shadow-sm: 0px 2px 4px -1px hsl(0 0% 0% / 0.28);
+  --shadow: 0px 4px 8px -2px hsl(0 0% 0% / 0.32);
+  --shadow-md: 0px 6px 12px -2px hsl(0 0% 0% / 0.36);
+  --shadow-lg: 0px 10px 24px -4px hsl(0 0% 0% / 0.40);
+  --shadow-xl: 0px 20px 40px -8px hsl(0 0% 0% / 0.44);
+  --shadow-2xl: 0px 30px 60px -12px hsl(0 0% 0% / 0.48);
 
-/* Fallback for older browsers */
   --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
   --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
-/* MOOD-BASED THEMES */
-:root[data-mood="calm"] {
-  --primary: 200 85% 55%;
-  --accent: 195 75% 92%;
-  --background: 200 65% 97%;
-  --card: 200 50% 99%;
-  --muted: 200 40% 90%;
+/* MOOD-SHIFTING ACCENT COLORS - Emotionally Responsive */
+
+/* Happy - Warm Peach */
+:root[data-mood="happy"],
+:root[data-mood="excited"],
+:root[data-mood="blissful"] {
+  --primary: 20 85% 72%;              /* Warm peach #FFB494 */
+  --accent: 25 75% 90%;
+  --ring: 20 85% 72%;
 }
 
-.dark[data-mood="calm"] {
-  --primary: 200 75% 60%;
-  --accent: 200 50% 22%;
-  --background: 210 40% 10%;
-  --card: 205 35% 14%;
-  --muted: 200 30% 20%;
+.dark[data-mood="happy"],
+.dark[data-mood="excited"],
+.dark[data-mood="blissful"] {
+  --primary: 20 80% 75%;
+  --accent: 25 50% 28%;
+  --ring: 20 80% 75%;
 }
 
+/* Calm/Peaceful - Cool Blue */
+:root[data-mood="calm"],
+:root[data-mood="peaceful"],
+:root[data-mood="confident"] {
+  --primary: 210 60% 75%;             /* Cool blue #A8C7E7 */
+  --accent: 215 55% 88%;
+  --ring: 210 60% 75%;
+}
+
+.dark[data-mood="calm"],
+.dark[data-mood="peaceful"],
+.dark[data-mood="confident"] {
+  --primary: 210 55% 78%;
+  --accent: 215 40% 30%;
+  --ring: 210 55% 78%;
+}
+
+/* Creative/Hopeful - Lavender */
+:root[data-mood="creative"],
+:root[data-mood="hopeful"],
 :root[data-mood="energetic"] {
-  --primary: 20 90% 55%;
-  --accent: 30 100% 94%;
-  --background: 30 70% 97%;
-  --card: 25 60% 99%;
-  --muted: 30 50% 88%;
+  --primary: 280 35% 70%;             /* Lavender #C5A3D9 */
+  --accent: 285 40% 88%;
+  --ring: 280 35% 70%;
 }
 
+.dark[data-mood="creative"],
+.dark[data-mood="hopeful"],
 .dark[data-mood="energetic"] {
-  --primary: 25 85% 62%;
-  --accent: 25 60% 24%;
-  --background: 18 35% 10%;
-  --card: 22 30% 14%;
-  --muted: 25 40% 22%;
+  --primary: 280 40% 72%;
+  --accent: 285 35% 32%;
+  --ring: 280 40% 72%;
 }
 
-:root[data-mood="sad"] {
-  --primary: 215 25% 50%;
-  --accent: 220 20% 90%;
-  --background: 220 15% 96%;
-  --card: 220 12% 98%;
-  --muted: 220 18% 88%;
+/* Neutral/Default - Soft Sage */
+:root[data-mood="neutral"],
+:root[data-mood="confused"] {
+  --primary: 120 15% 75%;             /* Soft sage #D4DDD4 */
+  --accent: 125 20% 88%;
+  --ring: 120 15% 75%;
 }
 
-.dark[data-mood="sad"] {
-  --primary: 215 30% 58%;
-  --accent: 220 20% 22%;
-  --background: 220 20% 10%;
-  --card: 218 18% 13%;
-  --muted: 220 22% 20%;
+.dark[data-mood="neutral"],
+.dark[data-mood="confused"] {
+  --primary: 120 18% 78%;
+  --accent: 125 25% 32%;
+  --ring: 120 18% 78%;
 }
 
-:root[data-mood="anxious"] {
-  --primary: 35 70% 52%;
-  --accent: 38 60% 92%;
-  --background: 35 45% 97%;
-  --card: 35 40% 99%;
-  --muted: 35 50% 88%;
+/* Sad/Melancholic - Muted blue-gray */
+:root[data-mood="sad"],
+:root[data-mood="melancholic"],
+:root[data-mood="lonely"] {
+  --primary: 215 22% 65%;
+  --accent: 220 18% 88%;
+  --ring: 215 22% 65%;
 }
 
-.dark[data-mood="anxious"] {
-  --primary: 35 65% 60%;
-  --accent: 32 45% 24%;
-  --background: 28 30% 11%;
-  --card: 30 28% 15%;
-  --muted: 32 35% 22%;
+.dark[data-mood="sad"],
+.dark[data-mood="melancholic"],
+.dark[data-mood="lonely"] {
+  --primary: 215 25% 68%;
+  --accent: 220 22% 30%;
+  --ring: 215 25% 68%;
 }
 
-:root[data-mood="happy"] {
-  --primary: 45 95% 55%;
-  --accent: 50 100% 94%;
-  --background: 50 80% 97%;
-  --card: 48 70% 99%;
-  --muted: 50 60% 88%;
+/* Anxious/Stressed - Warm amber */
+:root[data-mood="anxious"],
+:root[data-mood="stressed"],
+:root[data-mood="overwhelmed"] {
+  --primary: 35 60% 68%;
+  --accent: 38 50% 88%;
+  --ring: 35 60% 68%;
 }
 
-.dark[data-mood="happy"] {
-  --primary: 48 90% 62%;
-  --accent: 45 65% 26%;
-  --background: 42 40% 11%;
-  --card: 44 35% 15%;
-  --muted: 45 45% 23%;
+.dark[data-mood="anxious"],
+.dark[data-mood="stressed"],
+.dark[data-mood="overwhelmed"] {
+  --primary: 35 55% 70%;
+  --accent: 38 40% 32%;
+  --ring: 35 55% 70%;
 }
 
-:root[data-mood="stressed"] {
-  --primary: 5 85% 58%;
-  --accent: 8 80% 93%;
-  --background: 10 50% 97%;
-  --card: 8 45% 99%;
-  --muted: 10 55% 89%;
-}
-
-.dark[data-mood="stressed"] {
-  --primary: 5 80% 64%;
-  --accent: 5 55% 25%;
-  --background: 2 35% 11%;
-  --card: 4 32% 15%;
-  --muted: 6 40% 23%;
-}
-
-:root[data-mood="peaceful"] {
-  --primary: 160 75% 50%;
-  --accent: 155 70% 92%;
-  --background: 155 60% 97%;
-  --card: 158 50% 99%;
-  --muted: 155 45% 89%;
-}
-
-.dark[data-mood="peaceful"] {
-  --primary: 160 70% 58%;
-  --accent: 158 45% 23%;
-  --background: 162 38% 10%;
-  --card: 160 35% 14%;
-  --muted: 158 40% 21%;
-}
-
+/* Angry - Soft coral */
 :root[data-mood="angry"] {
-  --primary: 355 90% 52%;
-  --accent: 358 85% 92%;
-  --background: 355 40% 97%;
-  --card: 356 35% 99%;
-  --muted: 355 45% 88%;
+  --primary: 5 65% 68%;
+  --accent: 8 55% 88%;
+  --ring: 5 65% 68%;
 }
 
 .dark[data-mood="angry"] {
-  --primary: 355 85% 60%;
-  --accent: 355 50% 24%;
-  --background: 350 32% 11%;
-  --card: 352 30% 15%;
-  --muted: 354 38% 22%;
-}
-
-:root[data-mood="confused"] {
-  --primary: 265 45% 55%;
-  --accent: 268 40% 91%;
-  --background: 265 30% 96%;
-  --card: 266 25% 98%;
-  --muted: 265 35% 87%;
-}
-
-.dark[data-mood="confused"] {
-  --primary: 265 50% 62%;
-  --accent: 264 35% 23%;
-  --background: 268 28% 11%;
-  --card: 266 26% 15%;
-  --muted: 265 32% 21%;
-}
-
-:root[data-mood="excited"] {
-  --primary: 330 85% 60%;
-  --accent: 332 80% 94%;
-  --background: 330 65% 97%;
-  --card: 331 55% 99%;
-  --muted: 330 50% 90%;
-}
-
-.dark[data-mood="excited"] {
-  --primary: 330 80% 65%;
-  --accent: 328 55% 26%;
-  --background: 332 38% 11%;
-  --card: 330 35% 15%;
-  --muted: 329 42% 24%;
-}
-
-:root[data-mood="melancholic"] {
-  --primary: 230 40% 52%;
-  --accent: 232 35% 90%;
-  --background: 230 25% 96%;
-  --card: 231 20% 98%;
-  --muted: 230 30% 86%;
-}
-
-.dark[data-mood="melancholic"] {
-  --primary: 230 45% 60%;
-  --accent: 230 30% 22%;
-  --background: 232 25% 10%;
-  --card: 231 22% 14%;
-  --muted: 230 28% 20%;
-}
-
-:root[data-mood="confident"] {
-  --primary: 195 85% 50%;
-  --accent: 190 75% 92%;
-  --background: 190 60% 97%;
-  --card: 192 50% 99%;
-  --muted: 190 45% 88%;
-}
-
-.dark[data-mood="confident"] {
-  --primary: 195 80% 58%;
-  --accent: 192 50% 24%;
-  --background: 198 40% 11%;
-  --card: 195 36% 15%;
-  --muted: 193 42% 22%;
-}
-
-:root[data-mood="blissful"] {
-  --primary: 280 95% 65%;
-  --accent: 285 85% 95%;
-  --background: 285 75% 98%;
-  --card: 282 65% 99%;
-  --muted: 285 60% 92%;
-}
-
-.dark[data-mood="blissful"] {
-  --primary: 280 90% 70%;
-  --accent: 278 60% 28%;
-  --background: 285 45% 12%;
-  --card: 282 40% 16%;
-  --muted: 280 48% 25%;
-}
-
-:root[data-mood="lonely"] {
-  --primary: 240 25% 48%;
-  --accent: 238 22% 88%;
-  --background: 240 18% 95%;
-  --card: 239 15% 97%;
-  --muted: 240 20% 84%;
-}
-
-.dark[data-mood="lonely"] {
-  --primary: 240 30% 56%;
-  --accent: 238 22% 21%;
-  --background: 242 22% 9%;
-  --card: 240 20% 13%;
-  --muted: 239 24% 19%;
-}
-
-:root[data-mood="hopeful"] {
-  --primary: 175 80% 52%;
-  --accent: 172 70% 93%;
-  --background: 170 60% 97%;
-  --card: 173 55% 99%;
-  --muted: 172 50% 90%;
-}
-
-.dark[data-mood="hopeful"] {
-  --primary: 175 75% 60%;
-  --accent: 172 48% 25%;
-  --background: 178 42% 11%;
-  --card: 175 38% 15%;
-  --muted: 173 44% 23%;
-}
-
-:root[data-mood="overwhelmed"] {
-  --primary: 15 75% 54%;
-  --accent: 18 70% 91%;
-  --background: 15 45% 96%;
-  --card: 16 40% 98%;
-  --muted: 15 50% 87%;
-}
-
-.dark[data-mood="overwhelmed"] {
-  --primary: 15 70% 62%;
-  --accent: 14 48% 24%;
-  --background: 12 32% 10%;
-  --card: 14 30% 14%;
-  --muted: 15 38% 21%;
+  --primary: 5 60% 70%;
+  --accent: 8 45% 32%;
+  --ring: 5 60% 70%;
 }
 
 @layer base {
@@ -429,48 +279,63 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    letter-spacing: var(--tracking-normal);
   }
 
-  h1, h2, h3 {
-    @apply font-display;
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+    letter-spacing: -0.02em;
   }
 }
 
-/**
- * Using the elevate system.
- * Automatic contrast adjustment.
- *
- * <element className="hover-elevate" />
- * <element className="active-elevate-2" />
- *
- * // Using the tailwind utility when a data attribute is "on"
- * <element className="toggle-elevate data-[state=on]:toggle-elevated" />
- * // Or manually controlling the toggle state
- * <element className="toggle-elevate toggle-elevated" />
- *
- * Elevation systems have to handle many states.
- * - not-hovered, vs. hovered vs. active  (three mutually exclusive states)
- * - toggled or not
- * - focused or not (this is not handled with these utilities)
- *
- * Even without handling focused or not, this is six possible combinations that
- * need to be distinguished from eachother visually.
- */
+/* MICRO ANIMATIONS - Smooth & Emotionally Resonant */
 @layer utilities {
+  /* Mood color transitions - smooth 400ms */
   .mood-transition {
-    transition: background-color 500ms ease, color 500ms ease, border-color 500ms ease;
+    transition: background-color 400ms ease-in-out, 
+                color 400ms ease-in-out, 
+                border-color 400ms ease-in-out,
+                box-shadow 400ms ease-in-out;
   }
 
-  @keyframes pulse-glow {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+  /* Gentle pulse for analyzing state */
+  @keyframes gentle-pulse {
+    0%, 100% { 
+      opacity: 1; 
+      transform: scale(1);
+    }
+    50% { 
+      opacity: 0.85; 
+      transform: scale(1.02);
+    }
   }
 
-  .pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
+  .pulse-gentle {
+    animation: gentle-pulse 2s ease-in-out infinite;
   }
 
-  @keyframes slideInFromBottom {
+  /* Smooth fade in */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 500ms ease-out;
+  }
+
+  /* Float animation for creative elements */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  /* Smooth slide up */
+  @keyframes slideUp {
     from {
       opacity: 0;
       transform: translateY(20px);
@@ -481,110 +346,93 @@
     }
   }
 
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+  .animate-slide-up {
+    animation: slideUp 400ms ease-out;
   }
 
-  @keyframes scaleIn {
+  /* Scale in with blur for glassmorphic entrance */
+  @keyframes scaleBlur {
     from {
       opacity: 0;
-      transform: scale(0.95);
+      transform: scale(0.96);
+      filter: blur(4px);
     }
     to {
       opacity: 1;
       transform: scale(1);
+      filter: blur(0);
     }
   }
 
-  .animate-slide-in {
-    animation: slideInFromBottom 0.4s ease-out;
+  .animate-scale-blur {
+    animation: scaleBlur 500ms ease-out;
   }
 
-  .animate-fade-in {
-    animation: fadeIn 0.5s ease-out;
+  /* Stagger delays for sequential animations */
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+
+  /* Glassmorphism utilities */
+  .glass {
+    @apply backdrop-blur-lg bg-white/60 dark:bg-black/40 border border-white/40 dark:border-white/10;
   }
 
-  .animate-scale-in {
-    animation: scaleIn 0.3s ease-out;
+  .glass-strong {
+    @apply backdrop-blur-xl bg-white/70 dark:bg-black/50 border border-white/50 dark:border-white/15;
   }
 
-  .stagger-delay-1 {
-    animation-delay: 0.1s;
+  /* Mood glow effect for buttons */
+  .mood-glow {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
   }
 
-  .stagger-delay-2 {
-    animation-delay: 0.2s;
+  .mood-glow-hover {
+    transition: box-shadow 250ms ease;
   }
 
-  .stagger-delay-3 {
-    animation-delay: 0.3s;
+  .mood-glow-hover:hover {
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.5);
   }
 
-  .delay-300 {
-    animation-delay: 300ms;
-  }
-
-  .delay-700 {
-    animation-delay: 700ms;
-  }
-
-  .delay-1000 {
-    animation-delay: 1000ms;
-  }
-
-  /* Hide ugly search cancel button in Chrome until we can style it properly */
+  /* Hide search cancel button */
   input[type="search"]::-webkit-search-cancel-button {
     @apply hidden;
   }
 
-  /* Placeholder styling for contentEditable div */
+  /* Placeholder for contentEditable */
   [contenteditable][data-placeholder]:empty::before {
     content: attr(data-placeholder);
     color: hsl(var(--muted-foreground));
     pointer-events: none;
   }
 
-  /* .no-default-hover-elevate/no-default-active-elevate is an escape hatch so consumers of
-   * buttons/badges can remove the automatic brightness adjustment on interactions
-   * and program their own. */
+  /* Elevation system escape hatches */
   .no-default-hover-elevate {}
-
   .no-default-active-elevate {}
 
-
-  /**
-   * Toggleable backgrounds go behind the content. Hoverable/active goes on top.
-   * This way they can stack/compound. Both will overlap the parent's borders!
-   * So borders will be automatically adjusted both on toggle, and hover/active,
-   * and they will be compounded.
-   */
+  /* Toggle elevation system */
   .toggle-elevate::before,
   .toggle-elevate-2::before {
     content: "";
     pointer-events: none;
     position: absolute;
     inset: 0px;
-    /*border-radius: inherit;   match rounded corners */
     border-radius: inherit;
     z-index: -1;
-    /* sits behind content but above backdrop */
   }
 
   .toggle-elevate.toggle-elevated::before {
     background-color: var(--elevate-2);
   }
 
-  /* If there's a 1px border, adjust the inset so that it covers that parent's border */
   .border.toggle-elevate::before {
     inset: -1px;
   }
 
-  /* Does not work on elements with overflow:hidden! */
+  /* Hover/Active elevation */
   .hover-elevate:not(.no-default-hover-elevate),
   .active-elevate:not(.no-default-active-elevate),
   .hover-elevate-2:not(.no-default-hover-elevate),
@@ -601,10 +449,8 @@
     pointer-events: none;
     position: absolute;
     inset: 0px;
-    /*border-radius: inherit;   match rounded corners */
     border-radius: inherit;
     z-index: 999;
-    /* sits in front of content */
   }
 
   .hover-elevate:hover:not(.no-default-hover-elevate)::after,
@@ -617,7 +463,6 @@
     background-color: var(--elevate-2);
   }
 
-  /* If there's a 1px border, adjust the inset so that it covers that parent's border */
   .border.hover-elevate:not(.no-hover-interaction-elevate)::after,
   .border.active-elevate:not(.no-active-interaction-elevate)::after,
   .border.hover-elevate-2:not(.no-hover-interaction-elevate)::after,

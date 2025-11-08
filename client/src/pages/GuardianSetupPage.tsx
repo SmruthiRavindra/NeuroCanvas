@@ -55,74 +55,94 @@ export default function GuardianSetupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-purple-950 dark:via-pink-950 dark:to-blue-950 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center space-y-4">
-          <div className="flex justify-center">
-            <Heart className="w-16 h-16 text-pink-500" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-accent/20 to-background p-8 animate-fade-in">
+      <div className="w-full max-w-md space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-6 animate-slide-up">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 backdrop-blur-sm border border-primary/20">
+            <Heart className="w-10 h-10 text-primary animate-float" />
           </div>
-          <CardTitle className="text-2xl font-bold">Guardian Details</CardTitle>
-          <CardDescription className="text-base">
-            Connect with someone who cares. If NeuroCanvas detects prolonged sadness, we'll send them a gentle alert to check in on you.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="guardian-name">Guardian Name *</Label>
-              <Input
-                id="guardian-name"
-                data-testid="input-guardian-name"
-                type="text"
-                value={guardianName}
-                onChange={(e) => setGuardianName(e.target.value)}
-                required
-                placeholder="e.g., Mom, Best Friend, Therapist"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="guardian-phone">Guardian Phone *</Label>
-              <Input
-                id="guardian-phone"
-                data-testid="input-guardian-phone"
-                type="tel"
-                value={guardianPhone}
-                onChange={(e) => setGuardianPhone(e.target.value)}
-                required
-                minLength={10}
-                placeholder="+1234567890"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="guardian-relationship">Relationship *</Label>
-              <Input
-                id="guardian-relationship"
-                data-testid="input-guardian-relationship"
-                type="text"
-                value={guardianRelationship}
-                onChange={(e) => setGuardianRelationship(e.target.value)}
-                required
-                placeholder="e.g., Mother, Friend, Partner"
-              />
-            </div>
+          <div className="space-y-3">
+            <h1 className="text-4xl font-heading font-bold tracking-tight text-foreground">
+              Guardian Details
+            </h1>
+            <p className="text-base font-body text-muted-foreground leading-relaxed px-4">
+              Connect with someone who cares. If NeuroCanvas detects prolonged sadness, we'll send them a gentle alert to check in on you.
+            </p>
+          </div>
+        </div>
 
-            <div className="p-4 bg-pink-50 dark:bg-pink-950/20 rounded-lg border border-pink-200 dark:border-pink-800">
-              <p className="text-sm text-muted-foreground">
-                <strong className="text-foreground">Example alert:</strong> "Your {guardianRelationship || 'friend'} might need a bit of warmth today 💛"
-              </p>
-            </div>
+        {/* Form Card */}
+        <Card className="glass shadow-xl border-white/20 dark:border-white/10 animate-scale-blur delay-200">
+          <CardContent className="pt-8 pb-8 px-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="guardian-name" className="font-body text-sm font-medium">
+                  Guardian Name *
+                </Label>
+                <Input
+                  id="guardian-name"
+                  data-testid="input-guardian-name"
+                  type="text"
+                  value={guardianName}
+                  onChange={(e) => setGuardianName(e.target.value)}
+                  required
+                  placeholder="e.g., Mom, Best Friend, Therapist"
+                  className="rounded-2xl font-body transition-all duration-300 focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="guardian-phone" className="font-body text-sm font-medium">
+                  Guardian Phone *
+                </Label>
+                <Input
+                  id="guardian-phone"
+                  data-testid="input-guardian-phone"
+                  type="tel"
+                  value={guardianPhone}
+                  onChange={(e) => setGuardianPhone(e.target.value)}
+                  required
+                  minLength={10}
+                  placeholder="+1234567890"
+                  className="rounded-2xl font-body transition-all duration-300 focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="guardian-relationship" className="font-body text-sm font-medium">
+                  Relationship *
+                </Label>
+                <Input
+                  id="guardian-relationship"
+                  data-testid="input-guardian-relationship"
+                  type="text"
+                  value={guardianRelationship}
+                  onChange={(e) => setGuardianRelationship(e.target.value)}
+                  required
+                  placeholder="e.g., Mother, Friend, Partner"
+                  className="rounded-2xl font-body transition-all duration-300 focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-              data-testid="button-guardian-submit"
-            >
-              {isLoading ? "Saving..." : "Continue"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+              <div className="p-6 glass rounded-2xl border border-primary/20">
+                <p className="text-sm font-body text-muted-foreground leading-relaxed">
+                  <strong className="text-foreground font-semibold">Example alert:</strong>
+                  <br />
+                  "Your {guardianRelationship || 'friend'} might need a bit of warmth today"
+                </p>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full rounded-2xl mood-glow-hover font-body font-semibold text-base h-12"
+                disabled={isLoading}
+                data-testid="button-guardian-submit"
+              >
+                {isLoading ? "Saving..." : "Continue"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

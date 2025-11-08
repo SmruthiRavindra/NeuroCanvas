@@ -53,60 +53,75 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-purple-950 dark:via-pink-950 dark:to-blue-950 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center space-y-4">
-          <div className="flex justify-center">
-            <Sparkles className="w-16 h-16 text-purple-500" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-accent/20 to-background p-8 animate-fade-in">
+      <div className="w-full max-w-2xl space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-6 animate-slide-up">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 backdrop-blur-sm border border-primary/20">
+            <Sparkles className="w-10 h-10 text-primary animate-float" />
           </div>
-          <CardTitle className="text-2xl font-bold">Tell Us About Yourself</CardTitle>
-          <CardDescription className="text-base">
-            Help us personalize your creative experience by sharing a bit about who you are
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="personality">Personality & Mood Style</Label>
-              <Textarea
-                id="personality"
-                data-testid="input-personality"
-                value={personality}
-                onChange={(e) => setPersonality(e.target.value)}
-                rows={4}
-                placeholder="How would you describe yourself? Are you introverted or extroverted? What makes you happy?"
-              />
-              <p className="text-xs text-muted-foreground">
-                Example: "I'm an introverted creative who loves quiet mornings and deep conversations"
-              </p>
-            </div>
+          <div className="space-y-3">
+            <h1 className="text-4xl font-heading font-bold tracking-tight text-foreground">
+              Tell Us About Yourself
+            </h1>
+            <p className="text-base font-body text-muted-foreground leading-relaxed px-4">
+              Help us personalize your creative experience by sharing a bit about who you are
+            </p>
+          </div>
+        </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="interests">Creative Interests & Hobbies</Label>
-              <Textarea
-                id="interests"
-                data-testid="input-interests"
-                value={interests}
-                onChange={(e) => setInterests(e.target.value)}
-                rows={4}
-                placeholder="What creative activities do you enjoy? Music, art, writing, poetry, photography?"
-              />
-              <p className="text-xs text-muted-foreground">
-                Example: "I love painting watercolors, writing poetry, and playing guitar"
-              </p>
-            </div>
+        {/* Form Card */}
+        <Card className="glass shadow-xl border-white/20 dark:border-white/10 animate-scale-blur delay-200">
+          <CardContent className="pt-8 pb-8 px-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="space-y-3">
+                <Label htmlFor="personality" className="font-body text-sm font-medium">
+                  Personality & Mood Style
+                </Label>
+                <Textarea
+                  id="personality"
+                  data-testid="input-personality"
+                  value={personality}
+                  onChange={(e) => setPersonality(e.target.value)}
+                  rows={4}
+                  placeholder="How would you describe yourself? Are you introverted or extroverted? What makes you happy?"
+                  className="rounded-2xl font-body resize-none transition-all duration-300 focus:ring-2 focus:ring-primary/30"
+                />
+                <p className="text-xs font-body text-muted-foreground leading-relaxed">
+                  Example: "I'm an introverted creative who loves quiet mornings and deep conversations"
+                </p>
+              </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-              data-testid="button-onboarding-submit"
-            >
-              {isLoading ? "Saving..." : "Start Creating"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+              <div className="space-y-3">
+                <Label htmlFor="interests" className="font-body text-sm font-medium">
+                  Creative Interests & Hobbies
+                </Label>
+                <Textarea
+                  id="interests"
+                  data-testid="input-interests"
+                  value={interests}
+                  onChange={(e) => setInterests(e.target.value)}
+                  rows={4}
+                  placeholder="What creative activities do you enjoy? Music, art, writing, poetry, photography?"
+                  className="rounded-2xl font-body resize-none transition-all duration-300 focus:ring-2 focus:ring-primary/30"
+                />
+                <p className="text-xs font-body text-muted-foreground leading-relaxed">
+                  Example: "I love painting watercolors, writing poetry, and playing guitar"
+                </p>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full rounded-2xl mood-glow-hover font-body font-semibold text-base h-12"
+                disabled={isLoading}
+                data-testid="button-onboarding-submit"
+              >
+                {isLoading ? "Saving..." : "Start Creating"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
