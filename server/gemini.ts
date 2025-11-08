@@ -545,4 +545,60 @@ export function generateLyriaMusicPrompts(
   };
 }
 
+// Method Acting Description Generator - Converts drawing prompts into first-person immersive experiences
+export async function generateMethodActingDescription(
+  drawingPrompt: string,
+  mood: string
+): Promise<{ description: string }> {
+  try {
+    const systemPrompt = `You are a creative visualization guide who helps artists by providing immersive, first-person experiential descriptions.
+
+When given a drawing prompt, respond with a vivid, sensory-rich description AS IF THE USER IS EXPERIENCING IT THEMSELVES. Use "you" language to make them feel like they ARE in the scene.
+
+Guidelines:
+- Write in second person ("you feel", "you see", "you hear")
+- Engage ALL senses: sight, sound, touch, smell, emotions
+- Keep it evocative and artistic, not literal instructions
+- Match the emotional tone to the user's current mood: ${mood}
+- Focus on the FEELING and EXPERIENCE, not technical drawing steps
+- Be poetic and immersive (2-4 paragraphs)
+- Create a sense of being "in the moment"
+
+Example:
+Prompt: "girl riding a horse"
+Response: "You feel the powerful muscles of the horse moving beneath you, each stride a rhythmic dance of strength and grace. The wind rushes past your face, carrying the earthy scent of leather and warm animal. Your fingers grip the reins—weathered, familiar—as sunlight filters through the trees ahead, dappling the path in golden light.
+
+The world seems to slow down. You're aware of everything: the horse's breathing, deep and steady; the creak of the saddle; the way your hair flows behind you like a banner. There's a freedom here, a connection between rider and beast that transcends words. You move as one being, racing toward the horizon where earth meets sky.
+
+The emotion swells in your chest—wild, untamed, alive. This is more than movement; it's flight without wings, partnership without speaking. Every hoofbeat echoes your heartbeat, and in this moment, you understand what it means to be truly present, truly free."`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash-exp",
+      config: {
+        systemInstruction: systemPrompt,
+        temperature: 1.2, // Higher creativity for immersive descriptions
+        topP: 0.95,
+        topK: 40
+      },
+      contents: `Create an immersive, first-person experiential description for this artwork: "${drawingPrompt}"`
+    });
+
+    const description = response.text?.trim();
+    
+    if (!description) {
+      throw new Error("Empty response from Gemini");
+    }
+
+    return { description };
+
+  } catch (error) {
+    console.error("Error generating method acting description:", error);
+    
+    // Fallback response
+    return {
+      description: `You imagine ${drawingPrompt} coming to life before you. The scene unfolds in your mind's eye, vivid and real. You can almost feel the textures, hear the sounds, sense the emotions of this moment. Every detail matters—the light, the shadows, the feeling in the air. This is your vision, waiting to be brought to life on canvas.`
+    };
+  }
+}
+
 export { lyriaClient };
