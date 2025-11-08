@@ -97,11 +97,13 @@ export default function Navbar() {
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer" asChild data-testid="menu-item-settings">
-                    <Link href="/settings">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </Link>
+                  <DropdownMenuItem 
+                    className="cursor-pointer" 
+                    onClick={() => setLocation('/settings')}
+                    data-testid="menu-item-settings"
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
