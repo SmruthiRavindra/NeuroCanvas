@@ -1,9 +1,10 @@
 import { Link, useLocation } from 'wouter';
-import { Palette, BookOpen, BarChart3, Lightbulb, Sparkles } from 'lucide-react';
+import { Palette, BookOpen, BarChart3, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useMood } from '@/contexts/MoodContext';
+import logoUrl from '@assets/generated_images/NeuroCanvas_emotional_AI_logo_894759fb.png';
 
 const navItems = [
   { path: '/canvas', label: 'Creative Canvas', icon: Palette },
@@ -23,9 +24,13 @@ export default function Navbar() {
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3 hover-elevate active-elevate-2 px-4 py-2 rounded-xl transition-all group">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg blur-md opacity-50 group-hover:opacity-75 transition-opacity" />
-                <div className="relative p-2 bg-gradient-to-br from-purple-600 via-purple-500 to-pink-600 rounded-lg shadow-lg">
-                  <Sparkles className="w-5 h-5 text-white animate-pulse" />
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg blur-md opacity-30 group-hover:opacity-50 transition-opacity" />
+                <div className="relative">
+                  <img 
+                    src={logoUrl} 
+                    alt="NeuroCanvas Logo" 
+                    className="w-10 h-10 object-contain"
+                  />
                 </div>
               </div>
               <span className="text-2xl font-display font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
