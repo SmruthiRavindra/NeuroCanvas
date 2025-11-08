@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { analyzeMoodFromText, generateCreativeSuggestions, chatAboutHobby, suggestYouTubeChannels, generateMethodActingDescription, analyzeMusicInput } from "./gemini";
+import { insertJournalEntrySchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Multimodal mood detection endpoint (voice + video)
@@ -228,6 +229,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error in hobby chat:", error);
       res.status(500).json({ error: "Failed to generate response" });
+    }
+  });
+
+  // Journal entries endpoints
+  app.post("/api/journal-entries", async (req, res) => {
+    try {
+      const validationResult = insertJournalEntrySchema.safeParse(req.body);
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          error: "Invalid request data",
+          details: validationResult.error.errors 
+        });
+      }
+
+      const entry = await storage.createJournalEntry(validationResult.data);
+      res.json(entry);
+    } catch (error) {
+      console.error("Error creating journal entry:", error);
+      res.status(500).json({ error: "Failed to create journal entry" });
+    }
+  });
+
+  app.get("/api/journal-entries", async (req, res) => {
+    try {
+      const userId = req.query.userId as string | undefined;
+      const entries = await storage.getJournalEntries(userId);
+      res.json(entries);
+    } catch (error) {
+      console.error("Error fetching journal entries:", error);
+      res.status(500).json({ error: "Failed to fetch journal entries" });
     }
   });
 

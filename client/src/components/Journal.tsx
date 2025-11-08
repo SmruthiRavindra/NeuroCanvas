@@ -6,44 +6,51 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { apiRequest, queryClient } from '@/lib/queryClient';
+import { useMood } from '@/contexts/MoodContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface JournalEntry {
   id: string;
-  date: string;
+  userId: string | null;
   mood: string;
   content: string;
-  preview: string;
+  createdAt: string;
 }
 
-const mockEntries: JournalEntry[] = [
-  {
-    id: '1',
-    date: '2025-01-15',
-    mood: 'calm',
-    content: 'Today was peaceful. Spent the afternoon painting by the window.',
-    preview: 'Today was peaceful. Spent the afternoon painting...',
-  },
-  {
-    id: '2',
-    date: '2025-01-14',
-    mood: 'energetic',
-    content: 'Feeling inspired! Started working on a new music composition.',
-    preview: 'Feeling inspired! Started working on a new...',
-  },
-  {
-    id: '3',
-    date: '2025-01-13',
-    mood: 'anxious',
-    content: 'A bit overwhelmed today, but journaling helps ground me.',
-    preview: 'A bit overwhelmed today, but journaling helps...',
-  },
-];
-
 export default function Journal() {
-  const [entries] = useState<JournalEntry[]>(mockEntries);
   const [searchQuery, setSearchQuery] = useState('');
   const [newEntry, setNewEntry] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { mood } = useMood();
+  const { toast } = useToast();
+
+  const { data: entries = [], isLoading } = useQuery<JournalEntry[]>({
+    queryKey: ['/api/journal-entries'],
+  });
+
+  const createEntryMutation = useMutation({
+    mutationFn: async (data: { mood: string; content: string; userId?: string }) => {
+      return await apiRequest('POST', '/api/journal-entries', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/journal-entries'] });
+      setNewEntry('');
+      setIsDialogOpen(false);
+      toast({
+        title: 'Entry saved',
+        description: 'Your journal entry has been saved successfully.',
+      });
+    },
+    onError: () => {
+      toast({
+        title: 'Error',
+        description: 'Failed to save journal entry. Please try again.',
+        variant: 'destructive',
+      });
+    },
+  });
 
   const filteredEntries = entries.filter(
     (entry) =>
@@ -52,9 +59,31 @@ export default function Journal() {
   );
 
   const saveEntry = () => {
-    console.log('Saving journal entry:', newEntry);
-    setNewEntry('');
-    setIsDialogOpen(false);
+    if (!newEntry.trim()) {
+      toast({
+        title: 'Empty entry',
+        description: 'Please write something before saving.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    createEntryMutation.mutate({
+      mood: mood || 'calm',
+      content: newEntry,
+    });
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const getPreview = (content: string, maxLength: number = 60) => {
+    if (content.length <= maxLength) return content;
+    return content.substring(0, maxLength) + '...';
   };
 
   return (
@@ -84,8 +113,13 @@ export default function Journal() {
                   onChange={(e) => setNewEntry(e.target.value)}
                   data-testid="textarea-journal-entry"
                 />
-                <Button onClick={saveEntry} className="w-full" data-testid="button-save-entry">
-                  Save Entry
+                <Button 
+                  onClick={saveEntry} 
+                  className="w-full" 
+                  data-testid="button-save-entry"
+                  disabled={createEntryMutation.isPending}
+                >
+                  {createEntryMutation.isPending ? 'Saving...' : 'Save Entry'}
                 </Button>
               </div>
             </DialogContent>
@@ -106,24 +140,34 @@ export default function Journal() {
         </div>
 
         <div className="space-y-4">
-          {filteredEntries.map((entry) => (
-            <Card key={entry.id} className="hover-elevate cursor-pointer" data-testid={`card-entry-${entry.id}`}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">{entry.date}</span>
-                      <Badge variant="outline" className="capitalize" data-testid={`badge-mood-${entry.id}`}>
-                        {entry.mood}
-                      </Badge>
+          {isLoading ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Loading your journal entries...
+            </div>
+          ) : filteredEntries.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              {searchQuery ? 'No entries match your search.' : 'No journal entries yet. Start writing!'}
+            </div>
+          ) : (
+            filteredEntries.map((entry) => (
+              <Card key={entry.id} className="hover-elevate cursor-pointer" data-testid={`card-entry-${entry.id}`}>
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Calendar className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">{formatDate(entry.createdAt)}</span>
+                        <Badge variant="outline" className="capitalize" data-testid={`badge-mood-${entry.id}`}>
+                          {entry.mood}
+                        </Badge>
+                      </div>
+                      <CardTitle className="text-lg">{getPreview(entry.content)}</CardTitle>
                     </div>
-                    <CardTitle className="text-lg">{entry.preview}</CardTitle>
                   </div>
-                </div>
-              </CardHeader>
-            </Card>
-          ))}
+                </CardHeader>
+              </Card>
+            ))
+          )}
         </div>
       </div>
     </div>

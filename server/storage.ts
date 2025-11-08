@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type VoicePersona } from "@shared/schema";
+import { type User, type InsertUser, type VoicePersona, type JournalEntry, type InsertJournalEntry } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 // Voice Persona seed data - 8 AI assistants (4 male, 4 female)
@@ -85,15 +85,20 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   getAllVoicePersonas(): Promise<VoicePersona[]>;
   getVoicePersona(id: string): Promise<VoicePersona | undefined>;
+  createJournalEntry(entry: InsertJournalEntry): Promise<JournalEntry>;
+  getJournalEntries(userId?: string): Promise<JournalEntry[]>;
+  getJournalEntry(id: string): Promise<JournalEntry | undefined>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private voicePersonas: Map<string, VoicePersona>;
+  private journalEntries: Map<string, JournalEntry>;
 
   constructor() {
     this.users = new Map();
     this.voicePersonas = new Map();
+    this.journalEntries = new Map();
     
     // Seed voice personas
     VOICE_PERSONAS.forEach(persona => {
@@ -124,6 +129,31 @@ export class MemStorage implements IStorage {
 
   async getVoicePersona(id: string): Promise<VoicePersona | undefined> {
     return this.voicePersonas.get(id);
+  }
+
+  async createJournalEntry(insertEntry: InsertJournalEntry): Promise<JournalEntry> {
+    const id = randomUUID();
+    const entry: JournalEntry = {
+      id,
+      userId: insertEntry.userId ?? null,
+      mood: insertEntry.mood,
+      content: insertEntry.content,
+      createdAt: new Date(),
+    };
+    this.journalEntries.set(id, entry);
+    return entry;
+  }
+
+  async getJournalEntries(userId?: string): Promise<JournalEntry[]> {
+    let entries = Array.from(this.journalEntries.values());
+    if (userId) {
+      entries = entries.filter(entry => entry.userId === userId);
+    }
+    return entries.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getJournalEntry(id: string): Promise<JournalEntry | undefined> {
+    return this.journalEntries.get(id);
   }
 }
 
