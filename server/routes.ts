@@ -161,6 +161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sunoStyle = persona.musicGenres.join(', ');
 
       // Generate music using Suno API
+      console.log('🎵 Calling Suno API with:', { sunoPrompt, sunoStyle, personaName: persona.displayName });
       const sunoResponse = await sunoClient.generateMusic({
         prompt: sunoPrompt,
         customMode: true,
@@ -171,6 +172,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         vocalGender: persona.gender === 'male' ? 'm' : 'f',
         styleWeight: 0.7,
       });
+
+      console.log('✅ Suno response:', sunoResponse);
 
       res.json({
         success: true,
