@@ -4,7 +4,6 @@ import { Mic, Loader2, Video, VideoOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMood } from '@/contexts/MoodContext';
 import * as faceapi from '@vladmandic/face-api';
-import logoUrl from '@assets/neurocanvas-logo.png';
 
 type AnalysisState = 'idle' | 'analyzing';
 
@@ -394,16 +393,12 @@ export default function MoodDetectionLanding() {
         <div className="max-w-4xl w-full">
           {/* Title Section */}
           <div className="text-center mb-16 space-y-6">
-            <div className="flex justify-center mb-8">
-              <img 
-                src={logoUrl} 
-                alt="NeuroCanvas Logo" 
-                className="w-48 h-auto object-contain drop-shadow-2xl"
-              />
-            </div>
-            <h1 className="text-6xl md:text-7xl font-display font-bold text-white mb-6 tracking-tight">
-              Detect Your Mood
+            <h1 className="text-7xl md:text-8xl font-display font-bold text-white mb-8 tracking-tight">
+              NeuroCanvas
             </h1>
+            <h2 className="text-5xl md:text-6xl font-display font-bold text-white mb-6 tracking-tight">
+              Detect Your Mood
+            </h2>
             <p className="text-xl md:text-2xl text-purple-200 max-w-2xl mx-auto leading-relaxed font-light">
               Use your voice to analyze your emotional state. Speak naturally and let our AI understand how you're feeling.
             </p>

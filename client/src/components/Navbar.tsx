@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useMood } from '@/contexts/MoodContext';
-import logoUrl from '@assets/neurocanvas-logo.png';
 
 const navItems = [
   { path: '/canvas', label: 'Creative Canvas', icon: Palette },
@@ -22,12 +21,10 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-3 py-3">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-3 hover-elevate active-elevate-2 px-4 py-2 rounded-xl transition-all group">
-              <img 
-                src={logoUrl} 
-                alt="NeuroCanvas Logo" 
-                className="h-10 object-contain"
-              />
+            <Link href="/" className="hover-elevate active-elevate-2 px-4 py-2 rounded-xl transition-all">
+              <h1 className="text-4xl font-display font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
+                NeuroCanvas
+              </h1>
             </Link>
 
             <div className="hidden md:flex items-center gap-2">
