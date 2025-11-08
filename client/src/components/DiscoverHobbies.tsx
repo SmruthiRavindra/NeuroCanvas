@@ -222,34 +222,39 @@ export default function DiscoverHobbies() {
     setUserInput('');
   };
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!userInput.trim() || !selectedHobby) return;
 
     const newUserMessage: ChatMessage = { role: 'user', content: userInput };
     setChatMessages(prev => [...prev, newUserMessage]);
-
-    // Simulate AI response based on common questions
-    setTimeout(() => {
-      let aiResponse = '';
-      const lowerInput = userInput.toLowerCase();
-
-      if (lowerInput.includes('cost') || lowerInput.includes('expensive') || lowerInput.includes('budget')) {
-        aiResponse = `Great question! ${selectedHobby.name} is quite budget-friendly. You can start with basic materials costing around $20-50. Many beginners start with even less by using items they already have at home.`;
-      } else if (lowerInput.includes('time') || lowerInput.includes('long') || lowerInput.includes('how much')) {
-        aiResponse = `You can start with just 15-20 minutes a day! The beauty of ${selectedHobby.name} is that it's flexible. Some people practice for an hour, others just a few minutes. The key is consistency, not duration.`;
-      } else if (lowerInput.includes('difficult') || lowerInput.includes('hard') || lowerInput.includes('learn')) {
-        aiResponse = `${selectedHobby.name} is ${selectedHobby.difficulty} level, which means it's very approachable! The learning curve is gentle, and you'll see progress quickly. Don't worry about being perfect - focus on enjoying the process.`;
-      } else if (lowerInput.includes('benefit') || lowerInput.includes('help') || lowerInput.includes('why')) {
-        aiResponse = `${selectedHobby.name} is wonderful for your current ${currentMood} mood. It can help with emotional expression, stress relief, and creative fulfillment. Many people find it meditative and grounding.`;
-      } else {
-        aiResponse = `That's a great question about ${selectedHobby.name}! Based on your ${currentMood} mood, this activity can be particularly beneficial. I'd recommend checking out the YouTube tutorials I've shared - they cover most beginner questions in detail. Is there anything specific about getting started that I can help clarify?`;
-      }
-
-      const aiMessage: ChatMessage = { role: 'assistant', content: aiResponse };
-      setChatMessages(prev => [...prev, aiMessage]);
-    }, 800);
-
     setUserInput('');
+
+    try {
+      const response = await fetch('/api/hobby-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          hobbyName: selectedHobby.name,
+          question: userInput,
+          mood: currentMood
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const aiMessage: ChatMessage = { role: 'assistant', content: data.response };
+        setChatMessages(prev => [...prev, aiMessage]);
+      } else {
+        throw new Error('Failed to get response');
+      }
+    } catch (error) {
+      console.error('Error in hobby chat:', error);
+      const aiMessage: ChatMessage = { 
+        role: 'assistant', 
+        content: `That's a great question about ${selectedHobby.name}! I'd recommend checking out the YouTube tutorials I've shared - they cover most beginner questions in detail.`
+      };
+      setChatMessages(prev => [...prev, aiMessage]);
+    }
   };
   
   const filteredHobbies = hobbies.filter((hobby) => {

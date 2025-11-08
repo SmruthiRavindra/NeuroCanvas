@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Music, Palette, FileText, Sparkles, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,12 +35,42 @@ export default function CreativeCanvas() {
   const { mood } = useMood();
   const [activeMode, setActiveMode] = useState<'music' | 'art' | 'poetry'>('art');
   const [userInput, setUserInput] = useState('');
+  const [suggestions, setSuggestions] = useState<Record<string, string[]>>({
+    music: [],
+    art: [],
+    poetry: []
+  });
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   const currentMood = mood || 'calm';
-  const suggestions = moodSuggestions[currentMood];
+  const fallbackSuggestions = moodSuggestions[currentMood];
+
+  useEffect(() => {
+    fetchSuggestions(activeMode);
+  }, [activeMode, currentMood]);
+
+  const fetchSuggestions = async (mode: 'music' | 'art' | 'poetry') => {
+    setLoadingSuggestions(true);
+    try {
+      const response = await fetch('/api/creative-suggestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mood: currentMood, mode })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSuggestions(prev => ({ ...prev, [mode]: data.suggestions }));
+      }
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
 
   const regenerateSuggestion = () => {
-    console.log('Regenerating AI suggestion for', activeMode);
+    fetchSuggestions(activeMode);
   };
 
   return (
@@ -117,7 +147,7 @@ export default function CreativeCanvas() {
                     </Button>
                   </div>
                   <div className="space-y-2">
-                    {suggestions[activeMode].map((suggestion, idx) => (
+                    {(suggestions[activeMode].length > 0 ? suggestions[activeMode] : fallbackSuggestions[activeMode]).map((suggestion, idx) => (
                       <Card
                         key={idx}
                         className="p-3 hover-elevate cursor-pointer"
