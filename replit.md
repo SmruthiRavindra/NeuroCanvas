@@ -12,6 +12,7 @@ NeuroCanvas is an emotion-aware AI creative companion that helps users express t
 - Weekly mood analytics and insights
 - Community sharing platform
 - Hobby discovery with AI-powered recommendations
+- Multi-API key management with automatic quota rotation
 
 **Technology Stack:**
 - Frontend: React with TypeScript, Vite, Wouter (routing)
@@ -25,6 +26,21 @@ NeuroCanvas is an emotion-aware AI creative companion that helps users express t
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## Recent Changes
+
+**November 8, 2025:**
+- Implemented multi-API key management system to overcome Gemini's 50 requests/day quota limitation
+  - Added database schema for storing multiple API keys per user
+  - Created Settings page UI for adding, viewing, and deleting API keys
+  - Implemented automatic key rotation when quota limits are reached
+  - API keys are masked in the UI for security (shows first 10 and last 4 characters only)
+  - System tries user's API keys first, then falls back to environment variable
+  - Added Settings link to profile dropdown menu in navbar
+
+**Previous Changes:**
+- Reverted UI color scheme from muted lavender/beige back to original vibrant design with saturated purples, blues, and greens
+- Implemented user logout functionality with dropdown menu accessible from avatar icon in navbar
 
 ## System Architecture
 
